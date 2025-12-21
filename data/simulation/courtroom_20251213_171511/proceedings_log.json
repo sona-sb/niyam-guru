@@ -1,0 +1,17 @@
+{
+  "case_title": "Consumer vs. The Mobile Phone Seller",
+  "simulation_date": "2025-12-13T17:15:11.315530",
+  "total_hearings": 1,
+  "total_turns": 1,
+  "case_concluded": false,
+  "final_phase": "opening",
+  "proceedings": [
+    {
+      "speaker": "JUDGE",
+      "content": "This matter comes before me as a consumer complaint under Section 35 of the Consumer Protection Act, 2019, concerning a mobile phone purchased by the Complainant which allegedly exploded within 24 hours of purchase. The Complainant seeks a refund and compensation, alleging a defective product and deficiency in service by the Opposite Party, the retail seller.\n\nThe issues framed for consideration are as follows:\n1.  Whether the mobile phone that exploded within one day of purchase can be considered a 'defective' good under the Consumer Protection Act, 2019?\n2.  Whether the seller's refusal to provide a remedy and blaming the user constitutes a 'deficiency in service'?\n3.  Whether the consumer is entitled to a refund and compensation?\n\nLearned Complainant, you may now present your initial statement regarding the facts of the case and the relief sought.",
+      "phase": "opening",
+      "timestamp": "2025-12-13T17:14:54.767618"
+    }
+  ],
+  "judgment_modifications": []
+}

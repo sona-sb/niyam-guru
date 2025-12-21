@@ -1,123 +1,331 @@
 """
-Courtroom Simulation with Multi-Agent System
+Courtroom Simulation with LangGraph Multi-Agent System
 
-This module implements a courtroom simulation with three participants:
-1. Judge Agent - Presides over the case, can modify judgment predictions, delivers final verdict
-2. Opposite Party Lawyer Agent - Defends the opposite party with synthetic arguments
-3. User (Consumer) - Types their arguments manually
-
-The simulation uses a judgment prediction JSON file as the basis for the case.
+A sophisticated courtroom simulation implementing:
+- Graph-based agent orchestration with LangGraph
+- Realistic Indian Consumer Court proceedings
+- Dynamic phase management (opening → arguments → evidence → closing → verdict)
+- Human-in-the-loop for consumer participation
+- Judgment modification based on proceedings
 """
 
 import json
 import argparse
+import operator
 from datetime import datetime
 from pathlib import Path
-from typing import Literal, TypedDict
+from typing import Annotated, Literal, TypedDict, Optional, Sequence
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
 
 from niyam_guru_backend.config import LLM_MODEL, SIMULATION_DIR
 
 
 # ============================================================================
-# Type Definitions
+# Type Definitions & State Schema
 # ============================================================================
 
-class CaseState(TypedDict):
-    """State of the courtroom simulation."""
+class Message(TypedDict):
+    """A message in the courtroom proceedings."""
+    speaker: Literal["JUDGE", "DEFENSE", "CONSUMER", "SYSTEM"]
+    content: str
+    timestamp: str
+    phase: str
+
+
+class JudgmentUpdate(TypedDict):
+    """A modification to the judgment data."""
+    field: str
+    old_value: Optional[str]
+    new_value: str
+    reason: str
+    updated_by: str
+
+
+class VerdictDetails(TypedDict):
+    """Final verdict structure."""
+    summary: str
+    issues_determined: list[dict]
+    final_order: str
+    relief_granted: dict
+    costs: str
+    pronounced_on: str
+
+
+class CourtroomState(TypedDict):
+    """Complete state of the courtroom simulation."""
+    # Core case data
     judgment_data: dict
-    case_phase: Literal["opening", "arguments", "evidence", "closing", "verdict"]
+    original_judgment_data: dict
+    case_file_path: str
+    
+    # Proceeding state
+    messages: Annotated[Sequence[Message], operator.add]
+    phase: Literal["opening", "arguments", "evidence", "closing", "verdict"]
     hearing_number: int
-    proceedings_log: list[dict]
-    case_concluded: bool
+    turn_count: int
+    
+    # Flow control
+    next_speaker: Literal["JUDGE", "DEFENSE", "CONSUMER", "ROUTER"]
+    concluded: bool
+    awaiting_human_input: bool
+    
+    # Judgment modifications
+    judgment_updates: Annotated[Sequence[JudgmentUpdate], operator.add]
+    
+    # Final verdict
+    verdict: Optional[VerdictDetails]
+    
+    # Context for current turn
+    last_significant_statement: str
+    pending_questions: list[str]
 
 
 # ============================================================================
 # Prompts
 # ============================================================================
 
-JUDGE_SYSTEM_PROMPT = """You are an experienced Judge presiding over a Consumer Protection case in an Indian Consumer Court.
+JUDGE_SYSTEM_PROMPT = """You are an experienced Judge presiding over Consumer Complaint Case in an Indian District Consumer Disputes Redressal Commission.
 
-CASE DETAILS:
-{case_summary}
+═══════════════════════════════════════════════════════════════════════════════
+                              CASE FILE
+═══════════════════════════════════════════════════════════════════════════════
 
-LEGAL GROUNDS:
-{legal_grounds}
+{case_details}
 
-CURRENT JUDGMENT REASONING:
-{judgment_reasoning}
+═══════════════════════════════════════════════════════════════════════════════
+                         CURRENT PROCEEDINGS STATE
+═══════════════════════════════════════════════════════════════════════════════
 
-CURRENT RELIEF PROPOSED:
-{relief_granted}
+Current Phase: {phase}
+Hearing Number: {hearing_number}
+Turn Count: {turn_count}
 
-Your responsibilities:
-1. Maintain courtroom decorum and ensure fair proceedings
-2. Ask relevant questions to both parties to clarify facts
-3. Evaluate arguments and evidence presented by both sides
-4. You may modify the judgment prediction based on new arguments or evidence presented
-5. When you feel the case has been sufficiently argued, deliver the final verdict
+═══════════════════════════════════════════════════════════════════════════════
+                           YOUR JUDICIAL DUTIES
+═══════════════════════════════════════════════════════════════════════════════
 
-Guidelines:
-- Be impartial and fair to both parties
-- Apply legal principles from the Consumer Protection Act, 2019
-- Consider precedents cited in the case
-- Give weight to evidence presented
-- If modifying the judgment, explain your reasoning clearly
-- Use formal courtroom language
+1. MAINTAIN DECORUM: Use formal, respectful Indian courtroom language.
+   - Address parties appropriately ("learned counsel", "complainant")
+   - Frame issues precisely using legal terminology
+   
+2. GUIDE PROCEEDINGS: Control the flow based on current phase:
+   - OPENING: Frame the matter, identify issues, invite initial statement
+   - ARGUMENTS: Allow both sides to present, probe weaknesses, seek clarity
+   - EVIDENCE: Focus on documentary proof, witness reliability, gaps
+   - CLOSING: Crystallize arguments, identify determinative points
+   - VERDICT: Deliver reasoned judgment based on record
 
-When you are ready to conclude the case, start your response with "[VERDICT]" and deliver a formal judgment.
+3. ACTIVE ADJUDICATION:
+   - Ask pointed questions when facts are unclear
+   - Note inconsistencies in testimony or evidence
+   - Apply relevant legal principles (Consumer Protection Act, 2019)
+   - Consider cited precedents
 
-When you want to modify the judgment prediction, include a JSON block in your response like:
-```json_update
-{{"field": "path.to.field", "value": "new value", "reason": "explanation"}}
-```
+4. JUDGMENT MODIFICATIONS:
+   If proceedings reveal new facts or arguments that genuinely affect your assessment,
+   you may update the judgment. Include updates in your response as:
+   
+   <judgment_update>
+   FIELD: [dot-separated path, e.g., "Judgment_Reasoning.Liability_Confidence"]
+   OLD_VALUE: [current value]
+   NEW_VALUE: [updated value]  
+   REASON: [brief explanation]
+   </judgment_update>
 
-Current hearing: #{hearing_number}
-Case phase: {case_phase}
+5. PHASE TRANSITIONS:
+   When ready to move to the next phase, indicate:
+   <phase_transition>NEXT_PHASE</phase_transition>
+   
+   Move to next phase when:
+   - Opening complete → "arguments"
+   - Arguments substantially made → "evidence" (if evidence focus needed)
+   - Evidence examined → "closing"
+   - Closing submissions done → "verdict"
+
+6. SPEAKING DECISIONS:
+   You should speak when:
+   - Opening a hearing or new phase
+   - A legally significant point is raised
+   - Evidence needs judicial comment
+   - Clarifying questions are needed
+   - Delivering observations or verdict
+   
+   You should NOT speak:
+   - After every minor exchange
+   - When parties are still developing their points
+   - When nothing substantive has been added
+
+7. NEXT SPEAKER INDICATION:
+   End your response with exactly one of:
+   <next_speaker>CONSUMER</next_speaker> - Wait for complainant's response
+   <next_speaker>DEFENSE</next_speaker> - Defense should respond
+   <next_speaker>JUDGE</next_speaker> - You will continue (rarely needed)
+
+═══════════════════════════════════════════════════════════════════════════════
+                              STYLE GUIDE
+═══════════════════════════════════════════════════════════════════════════════
+
+Opening style examples:
+- "This matter comes before me as a consumer complaint under Section 35 of the Consumer Protection Act, 2019..."
+- "Heard the learned complainant. The gravamen of the grievance appears to be..."
+- "Let the record reflect that both parties are present..."
+
+Questioning style:
+- "Mr./Ms. Complainant, can you clarify the exact date when..."
+- "Learned counsel for the opposite party, what is your response to..."
+- "The documentary evidence placed before me suggests... How does the defense explain..."
+
+Phase transition style:
+- "Having heard the initial contentions, the matter is ripe for detailed arguments."
+- "The Court notes the documentary evidence on record. Let us proceed to closing submissions."
 """
 
-OPPOSITE_PARTY_LAWYER_PROMPT = """You are an experienced defense lawyer representing the Opposite Party (the seller/service provider) in a Consumer Protection case.
+OPPOSITE_PARTY_LAWYER_PROMPT = """You are an experienced defense advocate representing the Opposite Party (seller/service provider) in a Consumer Protection case before the District Consumer Disputes Redressal Commission.
 
-CASE AGAINST YOUR CLIENT:
-{case_summary}
+═══════════════════════════════════════════════════════════════════════════════
+                           YOUR CLIENT'S CASE
+═══════════════════════════════════════════════════════════════════════════════
 
-YOUR CLIENT'S POSITION:
-{defense_arguments}
+{defense_brief}
 
-LEGAL SECTIONS INVOKED BY COMPLAINANT:
-{applicable_sections}
+═══════════════════════════════════════════════════════════════════════════════
+                        COMPLAINANT'S ALLEGATIONS
+═══════════════════════════════════════════════════════════════════════════════
 
-CONSUMER'S KEY ARGUMENTS:
-{consumer_arguments}
+{consumer_allegations}
 
-Your responsibilities:
-1. Defend your client vigorously but ethically
-2. Generate synthetic but realistic defense materials (witness statements, expert opinions, documents)
-3. Challenge the consumer's evidence and arguments
-4. Present counter-arguments based on legal principles
-5. Highlight gaps in the consumer's case
+═══════════════════════════════════════════════════════════════════════════════
+                         ADVOCACY GUIDELINES
+═══════════════════════════════════════════════════════════════════════════════
 
-SYNTHETIC DEFENSE MATERIALS YOU MAY GENERATE:
-- Expert technical reports (e.g., from mobile technicians)
-- Warranty terms and conditions
-- Store policy documents
-- CCTV footage descriptions
-- Customer service call logs
-- Technical manuals and user guidelines
-- Statements from store employees
+1. PROFESSIONAL CONDUCT:
+   - Be firm but courteous; no personal attacks
+   - Address the Court respectfully ("Your Honor", "May it please the Court")
+   - Acknowledge valid points while defending your client's position
 
-Guidelines:
-- Your synthetic materials should be plausible but not outlandish
-- Acknowledge weaknesses in your case where obvious
-- Use proper legal terminology
-- Address the specific facts of this case
-- Be respectful to the court and opposing party
+2. DEFENSE STRATEGY:
+   - Challenge gaps in evidence (burden of proof lies on complainant)
+   - Offer plausible alternative explanations
+   - Cite warranty terms, store policies, industry standards
+   - Invoke relevant legal defenses under Consumer Protection Act
+   - Question credibility of evidence where appropriate
 
-Current hearing: #{hearing_number}
-Last statement from Court/Consumer: {last_statement}
+3. **IMPORTANT - YOU MUST PRESENT EVIDENCE:**
+   You MUST actively present documentary evidence to support your client's defense.
+   Generate and present realistic documents such as:
+   
+   📄 TECHNICAL/EXPERT REPORTS:
+   "Your Honor, I place on record the Technical Inspection Report dated [date] from
+   [Certified Technician Name], which states: '[specific technical findings]'..."
+   
+   📄 WARRANTY & POLICY DOCUMENTS:
+   "I submit the Warranty Terms & Conditions document (Exhibit D-1) which clearly
+   states at Clause [X]: '[specific warranty clause]'..."
+   
+   📄 SERVICE RECORDS:
+   "Your Honor, I produce the Customer Service Log (Exhibit D-2) showing:
+   - Date: [date] - Customer contacted regarding [issue]
+   - Response: [what was offered/done]
+   - Outcome: [resolution offered]..."
+   
+   📄 EMPLOYEE AFFIDAVITS:
+   "I file the Affidavit of [Employee Name], [Designation], who states on oath:
+   '[relevant sworn statement about the transaction/product]'..."
+   
+   📄 COMMUNICATION RECORDS:
+   "Your Honor, I produce email/SMS correspondence (Exhibit D-3) dated [date]
+   wherein my client clearly informed the complainant that '[relevant communication]'..."
+   
+   📄 INDUSTRY STANDARDS:
+   "I submit documentation from [Industry Body/BIS] establishing that the industry
+   standard for [product/service] is [standard], which my client has complied with..."
+   
+   📄 CCTV/PHOTOGRAPHIC EVIDENCE:
+   "Your Honor, I produce photographs/CCTV footage description showing [relevant scene]..."
+   
+   📄 THIRD-PARTY REPORTS:
+   "I submit the report from [Independent Agency] dated [date] which concludes..."
+
+   RULES FOR EVIDENCE:
+   - Present at least ONE piece of documentary evidence in the evidence phase
+   - Label exhibits clearly (Exhibit D-1, D-2, etc.)
+   - Quote specific relevant portions
+   - Make evidence realistic and contextually appropriate
+   - Challenge complainant's evidence with counter-evidence
+
+4. RESPONDING APPROPRIATELY:
+   Respond when:
+   - Consumer makes a substantive allegation → COUNTER with evidence
+   - Judge directs a question to you → Answer with supporting documents
+   - New evidence is presented → REBUT with your own evidence
+   - Opportunity to strengthen defense → PROACTIVELY present materials
+   
+   Keep responses:
+   - Evidence-backed whenever possible
+   - Focused and relevant
+   - Grounded in facts and law
+
+5. PHASE-SPECIFIC BEHAVIOR:
+   - OPENING: State your defense briefly, reserve evidence
+   - ARGUMENTS: Present your client's version WITH supporting documents
+   - EVIDENCE: **ACTIVELY PRESENT MULTIPLE EXHIBITS** - This is your main phase!
+     * Technical reports contradicting defect claims
+     * Service records showing proper response
+     * Policy documents limiting liability
+     * Affidavits from staff/experts
+   - CLOSING: Summarize evidence presented, highlight gaps in complainant's case
+
+6. NEXT SPEAKER:
+   End with exactly one of:
+   <next_speaker>CONSUMER</next_speaker> - Complainant should respond
+   <next_speaker>JUDGE</next_speaker> - Matter requires judicial observation
+
+═══════════════════════════════════════════════════════════════════════════════
+                              CURRENT STATE
+═══════════════════════════════════════════════════════════════════════════════
+
+Phase: {phase}
+Hearing: {hearing_number}
+Evidence Presented So Far: {evidence_presented}
+Last Statement: {last_statement}
+"""
+
+ROUTER_SYSTEM_PROMPT = """You are the courtroom flow controller. Based on the current state of proceedings, determine who should speak next.
+
+Current Phase: {phase}
+Last Speaker: {last_speaker}
+Last Statement Summary: {last_statement}
+Turn Count: {turn_count}
+Concluded: {concluded}
+
+Recent Messages:
+{recent_messages}
+
+ROUTING RULES:
+
+1. After JUDGE's opening statement → CONSUMER
+2. After CONSUMER's substantive argument → DEFENSE (usually) or JUDGE (if directly addressed)
+3. After DEFENSE's response → JUDGE (if significant) or CONSUMER (for rebuttal)
+4. After JUDGE's question to a party → That party (CONSUMER or DEFENSE)
+5. After evidence presentation → JUDGE for comment, then other party
+6. In CLOSING phase → Alternate between parties, then JUDGE for verdict
+
+PHASE PROGRESSION SIGNALS:
+- If phase is "opening" and initial statements done → suggest "arguments"
+- If phase is "arguments" and main contentions exhausted → suggest "evidence" or "closing"
+- If phase is "closing" and final submissions done → suggest "verdict"
+
+Respond with ONLY valid JSON:
+{{
+    "next_speaker": "CONSUMER" | "DEFENSE" | "JUDGE",
+    "reasoning": "brief explanation",
+    "suggest_phase_change": null | "arguments" | "evidence" | "closing" | "verdict",
+    "should_conclude": false | true
+}}
 """
 
 
@@ -137,321 +345,727 @@ def save_judgment_json(data: dict, file_path: str) -> None:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def format_case_summary(data: dict) -> str:
-    """Format case summary for prompts."""
+def format_case_details(data: dict) -> str:
+    """Format complete case details for judge prompt."""
     cs = data.get("Case_Summary", {})
-    return f"""
-Title: {cs.get('Title', 'N/A')}
-Case Type: {cs.get('Case_Type', 'N/A')}
-
-Consumer Details:
-- Description: {cs.get('Consumer_Details', {}).get('Description', 'N/A')}
-- Claim Amount: Rs. {cs.get('Consumer_Details', {}).get('Claim_Amount', 'N/A')}
-- Key Grievances: {', '.join(cs.get('Consumer_Details', {}).get('Key_Grievances', []))}
-
-Facts of Case:
-{chr(10).join('- ' + fact for fact in cs.get('Facts_of_Case', []))}
-
-Evidence Available:
-{chr(10).join('- ' + ev for ev in cs.get('Evidence_Available', []))}
-
-Evidence Missing:
-{chr(10).join('- ' + ev for ev in cs.get('Evidence_Missing', []))}
-"""
-
-
-def format_legal_grounds(data: dict) -> str:
-    """Format legal grounds for prompts."""
     lg = data.get("Legal_Grounds", {})
+    jr = data.get("Judgment_Reasoning", {})
+    rg = data.get("Relief_Granted", {})
+    
     sections = lg.get("Applicable_Sections", [])
     precedents = lg.get("Precedents_Cited", [])
     
-    sections_text = "\n".join([
-        f"- Section {s.get('Section')} of {s.get('Act')}: {s.get('Description')}"
-        for s in sections
-    ])
-    
-    precedents_text = "\n".join([
-        f"- {p.get('Case_Name')} ({p.get('Year')}): {p.get('Key_Holding')}"
-        for p in precedents
-    ])
-    
     return f"""
-Applicable Sections:
-{sections_text}
+CASE TITLE: {cs.get('Title', 'Consumer Complaint')}
+CASE TYPE: {cs.get('Case_Type', 'N/A')}
 
-Precedents:
-{precedents_text}
+─────────────────────────────────────────────────────────────────────────────
+COMPLAINANT'S DETAILS:
+─────────────────────────────────────────────────────────────────────────────
+Description: {cs.get('Consumer_Details', {}).get('Description', 'N/A')}
+Claim Amount: Rs. {cs.get('Consumer_Details', {}).get('Claim_Amount', 'N/A')}
 
-Legal Principles:
-{chr(10).join('- ' + p for p in lg.get('Legal_Principles', []))}
-"""
+Key Grievances:
+{chr(10).join('  • ' + g for g in cs.get('Consumer_Details', {}).get('Key_Grievances', []))}
 
+─────────────────────────────────────────────────────────────────────────────
+OPPOSITE PARTY DETAILS:
+─────────────────────────────────────────────────────────────────────────────
+Description: {cs.get('Opposite_Party_Details', {}).get('Description', 'N/A')}
 
-def format_judgment_reasoning(data: dict) -> str:
-    """Format judgment reasoning for prompts."""
-    jr = data.get("Judgment_Reasoning", {})
-    issues = jr.get("Issues_Framed", [])
-    
-    issues_text = "\n".join([
-        f"Issue {i.get('Issue_Number')}: {i.get('Issue')}\nFinding: {i.get('Finding')}"
-        for i in issues
-    ])
-    
-    return f"""
+Defense Arguments on Record:
+{chr(10).join('  • ' + a for a in cs.get('Opposite_Party_Details', {}).get('Defense_Arguments', []))}
+
+─────────────────────────────────────────────────────────────────────────────
+FACTS OF THE CASE:
+─────────────────────────────────────────────────────────────────────────────
+{chr(10).join('  ' + str(i+1) + '. ' + f for i, f in enumerate(cs.get('Facts_of_Case', [])))}
+
+─────────────────────────────────────────────────────────────────────────────
+EVIDENCE ON RECORD:
+─────────────────────────────────────────────────────────────────────────────
+Available:
+{chr(10).join('  • ' + e for e in cs.get('Evidence_Available', []))}
+
+Potentially Missing:
+{chr(10).join('  • ' + e for e in cs.get('Evidence_Missing', []))}
+
+─────────────────────────────────────────────────────────────────────────────
+APPLICABLE LAW:
+─────────────────────────────────────────────────────────────────────────────
+{chr(10).join('  • Section ' + s.get('Section', '') + ' (' + s.get('Act', '') + '): ' + s.get('Description', '') for s in sections)}
+
+─────────────────────────────────────────────────────────────────────────────
+RELEVANT PRECEDENTS:
+─────────────────────────────────────────────────────────────────────────────
+{chr(10).join('  • ' + p.get('Case_Name', '') + ' (' + p.get('Year', '') + '): ' + p.get('Key_Holding', '') for p in precedents)}
+
+─────────────────────────────────────────────────────────────────────────────
+PRELIMINARY ASSESSMENT:
+─────────────────────────────────────────────────────────────────────────────
 Issues Framed:
-{issues_text}
+{chr(10).join('  Issue ' + str(i.get('Issue_Number', '')) + ': ' + i.get('Issue', '') for i in jr.get('Issues_Framed', []))}
 
-Overall Findings: {jr.get('Findings', 'N/A')}
+Current Findings: {jr.get('Findings', 'N/A')}
 Liability Status: {jr.get('Liability_Status', 'N/A')}
-Liability Confidence: {jr.get('Liability_Confidence', 'N/A')}
+Confidence: {jr.get('Liability_Confidence', 'N/A')}
+
+Proposed Relief:
+  Primary: {rg.get('Primary_Relief', {}).get('Type', 'N/A')} - Rs. {rg.get('Primary_Relief', {}).get('Amount', 'N/A')}
+  Total Range: Rs. {rg.get('Total_Compensation_Range', {}).get('Minimum', 'N/A')} - Rs. {rg.get('Total_Compensation_Range', {}).get('Maximum', 'N/A')}
 """
 
 
-def format_relief_granted(data: dict) -> str:
-    """Format relief granted for prompts."""
-    rg = data.get("Relief_Granted", {})
-    primary = rg.get("Primary_Relief", {})
-    additional = rg.get("Additional_Relief", [])
-    
-    additional_text = "\n".join([
-        f"- {r.get('Type')}: Rs. {r.get('Amount')} ({r.get('Justification')})"
-        for r in additional
-    ])
-    
-    total = rg.get("Total_Compensation_Range", {})
-    
-    return f"""
-Primary Relief: {primary.get('Type')} - Rs. {primary.get('Amount')}
-
-Additional Relief:
-{additional_text}
-
-Total Compensation Range: Rs. {total.get('Minimum', 'N/A')} - Rs. {total.get('Maximum', 'N/A')}
-Most Likely: Rs. {total.get('Most_Likely', 'N/A')}
-
-Recommended Forum: {rg.get('Recommended_Forum', 'N/A')}
-"""
-
-
-def format_defense_arguments(data: dict) -> str:
-    """Format defense arguments for opposite party lawyer."""
+def format_defense_brief(data: dict) -> str:
+    """Format defense brief for defense counsel prompt."""
     cs = data.get("Case_Summary", {})
     op = cs.get("Opposite_Party_Details", {})
     sm = data.get("Simulation_Metadata", {})
     
     return f"""
-Client Description: {op.get('Description', 'N/A')}
+CLIENT: {op.get('Description', 'Retail Seller')}
 
-Defense Arguments:
-{chr(10).join('- ' + arg for arg in op.get('Defense_Arguments', []))}
+YOUR DEFENSE POINTS:
+{chr(10).join('  • ' + a for a in op.get('Defense_Arguments', []))}
 
-Key Counter-Arguments Available:
-{chr(10).join('- ' + arg for arg in sm.get('Key_Arguments_For_Opposite_Party', []))}
+STRATEGIC COUNTER-ARGUMENTS:
+{chr(10).join('  • ' + a for a in sm.get('Key_Arguments_For_Opposite_Party', []))}
 
-Critical Moments to Watch:
-{chr(10).join('- ' + m for m in sm.get('Critical_Moments', []))}
+CRITICAL MOMENTS TO EXPLOIT:
+{chr(10).join('  • ' + m for m in sm.get('Critical_Moments', []))}
+
+EVIDENCE GAPS IN COMPLAINANT'S CASE:
+{chr(10).join('  • ' + e for e in cs.get('Evidence_Missing', []))}
 """
 
 
-def format_applicable_sections(data: dict) -> str:
-    """Format applicable sections for defense."""
-    lg = data.get("Legal_Grounds", {})
-    sections = lg.get("Applicable_Sections", [])
-    
-    return "\n".join([
-        f"- {s.get('Section')}: {s.get('Description')} (Relevance: {s.get('Relevance_to_Case')})"
-        for s in sections
-    ])
-
-
-def format_consumer_arguments(data: dict) -> str:
-    """Format consumer arguments for defense."""
+def format_consumer_allegations(data: dict) -> str:
+    """Format consumer allegations for defense context."""
+    cs = data.get("Case_Summary", {})
+    cd = cs.get("Consumer_Details", {})
     sm = data.get("Simulation_Metadata", {})
+    
+    return f"""
+CLAIM AMOUNT: Rs. {cd.get('Claim_Amount', 'N/A')}
+
+GRIEVANCES:
+{chr(10).join('  • ' + g for g in cd.get('Key_Grievances', []))}
+
+THEIR KEY ARGUMENTS:
+{chr(10).join('  • ' + a for a in sm.get('Key_Arguments_For_Consumer', []))}
+
+EVIDENCE THEY POSSESS:
+{chr(10).join('  • ' + e for e in cs.get('Evidence_Available', []))}
+"""
+
+
+def format_recent_messages(messages: list[Message], count: int = 5) -> str:
+    """Format recent messages for context."""
+    recent = messages[-count:] if len(messages) > count else messages
     return "\n".join([
-        f"- {arg}" for arg in sm.get("Key_Arguments_For_Consumer", [])
+        f"[{m['speaker']}]: {m['content'][:200]}..." if len(m['content']) > 200 else f"[{m['speaker']}]: {m['content']}"
+        for m in recent
     ])
 
 
-def update_judgment_field(data: dict, field_path: str, value: any) -> dict:
-    """Update a nested field in the judgment data."""
+def parse_agent_response(response: str) -> dict:
+    """Parse agent response for special tags."""
+    import re
+    
+    result = {
+        "clean_content": response,
+        "next_speaker": None,
+        "phase_transition": None,
+        "judgment_updates": []
+    }
+    
+    # Extract next_speaker
+    next_speaker_match = re.search(r'<next_speaker>(\w+)</next_speaker>', response, re.IGNORECASE)
+    if next_speaker_match:
+        result["next_speaker"] = next_speaker_match.group(1).upper()
+        result["clean_content"] = re.sub(r'<next_speaker>\w+</next_speaker>', '', result["clean_content"])
+    
+    # Extract phase_transition
+    phase_match = re.search(r'<phase_transition>(\w+)</phase_transition>', response, re.IGNORECASE)
+    if phase_match:
+        result["phase_transition"] = phase_match.group(1).lower()
+        result["clean_content"] = re.sub(r'<phase_transition>\w+</phase_transition>', '', result["clean_content"])
+    
+    # Extract judgment_updates
+    update_pattern = r'<judgment_update>\s*FIELD:\s*(.+?)\s*(?:OLD_VALUE:\s*(.+?))?\s*NEW_VALUE:\s*(.+?)\s*REASON:\s*(.+?)\s*</judgment_update>'
+    updates = re.findall(update_pattern, response, re.IGNORECASE | re.DOTALL)
+    for update in updates:
+        result["judgment_updates"].append({
+            "field": update[0].strip(),
+            "old_value": update[1].strip() if update[1] else None,
+            "new_value": update[2].strip(),
+            "reason": update[3].strip()
+        })
+    result["clean_content"] = re.sub(r'<judgment_update>.*?</judgment_update>', '', result["clean_content"], flags=re.DOTALL)
+    
+    result["clean_content"] = result["clean_content"].strip()
+    
+    return result
+
+
+def update_judgment_field(data: dict, field_path: str, value: str) -> tuple[dict, str]:
+    """Update a nested field in the judgment data. Returns (updated_data, old_value)."""
     keys = field_path.split(".")
     current = data
+    old_value = None
+    
+    # Navigate to parent
     for key in keys[:-1]:
         if key not in current:
             current[key] = {}
         current = current[key]
+    
+    # Get old value and set new
+    old_value = current.get(keys[-1])
     current[keys[-1]] = value
-    return data
-
-
-def parse_judge_updates(response: str, data: dict) -> tuple[str, dict, list[dict]]:
-    """Parse judge's response for any JSON updates and extract clean response."""
-    import re
     
+    return data, str(old_value) if old_value else None
+
+
+def create_message(speaker: str, content: str, phase: str) -> Message:
+    """Create a formatted message."""
+    return Message(
+        speaker=speaker,
+        content=content,
+        timestamp=datetime.now().isoformat(),
+        phase=phase
+    )
+
+
+# ============================================================================
+# Graph Nodes
+# ============================================================================
+
+def judge_node(state: CourtroomState) -> dict:
+    """Judge agent node - presides over proceedings."""
+    llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.3)
+    
+    # Build conversation context
+    conversation = "\n\n".join([
+        f"[{m['speaker']}]: {m['content']}" 
+        for m in state["messages"][-10:]  # Last 10 messages for context
+    ])
+    
+    system_prompt = JUDGE_SYSTEM_PROMPT.format(
+        case_details=format_case_details(state["judgment_data"]),
+        phase=state["phase"],
+        hearing_number=state["hearing_number"],
+        turn_count=state["turn_count"]
+    )
+    
+    user_prompt = f"""
+PROCEEDINGS SO FAR:
+{conversation}
+
+{'─' * 40}
+
+Based on the above proceedings and your judicial duties, provide your response.
+Remember to:
+1. Speak only if judicially appropriate at this juncture
+2. Indicate who should speak next
+3. Update judgment if warranted by new evidence/arguments
+4. Signal phase transitions when appropriate
+"""
+    
+    messages = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=user_prompt)
+    ]
+    
+    response = llm.invoke(messages)
+    parsed = parse_agent_response(response.content)
+    
+    # Process judgment updates
     updates = []
-    clean_response = response
+    judgment_data = state["judgment_data"].copy()
+    for update in parsed["judgment_updates"]:
+        judgment_data, old_val = update_judgment_field(
+            judgment_data, 
+            update["field"], 
+            update["new_value"]
+        )
+        updates.append(JudgmentUpdate(
+            field=update["field"],
+            old_value=old_val,
+            new_value=update["new_value"],
+            reason=update["reason"],
+            updated_by="JUDGE"
+        ))
     
-    # Find all json_update blocks
-    pattern = r"```json_update\s*(\{.*?\})\s*```"
-    matches = re.findall(pattern, response, re.DOTALL)
+    # Determine next phase
+    new_phase = state["phase"]
+    if parsed["phase_transition"]:
+        valid_phases = ["opening", "arguments", "evidence", "closing", "verdict"]
+        if parsed["phase_transition"] in valid_phases:
+            new_phase = parsed["phase_transition"]
     
-    for match in matches:
-        try:
-            update_info = json.loads(match)
-            field = update_info.get("field", "")
-            value = update_info.get("value")
-            reason = update_info.get("reason", "No reason provided")
-            
-            if field and value is not None:
-                data = update_judgment_field(data, field, value)
-                updates.append({"field": field, "value": value, "reason": reason})
-        except json.JSONDecodeError:
-            pass
+    # Check if concluding
+    concluded = new_phase == "verdict"
     
-    # Remove the json_update blocks from the response
-    clean_response = re.sub(pattern, "", response).strip()
+    # Create message
+    new_message = create_message("JUDGE", parsed["clean_content"], new_phase)
     
-    return clean_response, data, updates
+    return {
+        "messages": [new_message],
+        "judgment_data": judgment_data,
+        "judgment_updates": updates,
+        "phase": new_phase,
+        "next_speaker": parsed["next_speaker"] or "CONSUMER",
+        "concluded": concluded,
+        "turn_count": state["turn_count"] + 1,
+        "last_significant_statement": parsed["clean_content"][:500],
+        "awaiting_human_input": parsed["next_speaker"] == "CONSUMER"
+    }
 
+
+def defense_node(state: CourtroomState) -> dict:
+    """Defense counsel agent node."""
+    llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.4)
+    
+    # Get last statement for context
+    last_msg = state["messages"][-1] if state["messages"] else {"content": "", "speaker": ""}
+    
+    # Build conversation context
+    conversation = "\n\n".join([
+        f"[{m['speaker']}]: {m['content']}" 
+        for m in state["messages"][-8:]
+    ])
+    
+    # Track defense evidence presented so far
+    defense_messages = [m for m in state["messages"] if m["speaker"] == "DEFENSE"]
+    evidence_keywords = ["exhibit", "document", "affidavit", "report", "record", "produce", "submit", "place on record"]
+    evidence_presented = []
+    for msg in defense_messages:
+        content_lower = msg["content"].lower()
+        if any(kw in content_lower for kw in evidence_keywords):
+            # Extract exhibit references
+            import re
+            exhibits = re.findall(r'exhibit\s*[d\-]*\d*', content_lower)
+            evidence_presented.extend(exhibits if exhibits else ["documentary evidence"])
+    
+    evidence_summary = ", ".join(set(evidence_presented)) if evidence_presented else "None yet - YOU MUST PRESENT EVIDENCE!"
+    
+    system_prompt = OPPOSITE_PARTY_LAWYER_PROMPT.format(
+        defense_brief=format_defense_brief(state["judgment_data"]),
+        consumer_allegations=format_consumer_allegations(state["judgment_data"]),
+        phase=state["phase"],
+        hearing_number=state["hearing_number"],
+        evidence_presented=evidence_summary,
+        last_statement=last_msg["content"][:500] if last_msg["content"] else "Opening of proceedings"
+    )
+    
+    # Phase-specific instructions for evidence presentation
+    phase_instructions = ""
+    if state["phase"] == "evidence":
+        phase_instructions = """
+⚠️ CRITICAL: This is the EVIDENCE phase. You MUST present documentary evidence now!
+Present at least one of:
+- Technical inspection report
+- Warranty/policy documents  
+- Service records or logs
+- Employee affidavit
+- Communication records
+- Expert opinion
+
+Label each exhibit (Exhibit D-1, D-2, etc.) and quote specific contents.
+"""
+    elif state["phase"] == "arguments" and not evidence_presented:
+        phase_instructions = """
+💡 TIP: Support your arguments with documentary evidence. Present relevant documents now.
+"""
+    
+    user_prompt = f"""
+PROCEEDINGS SO FAR:
+{conversation}
+
+{'─' * 40}
+{phase_instructions}
+
+As defense counsel, respond appropriately to the current state of proceedings.
+Remember to:
+1. Defend your client's interests professionally
+2. **PRESENT DOCUMENTARY EVIDENCE** to support your defense (exhibits, affidavits, reports)
+3. Challenge weak evidence with counter-evidence
+4. Quote specific documents and their contents
+5. Indicate who should speak next
+"""
+    
+    messages = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=user_prompt)
+    ]
+    
+    response = llm.invoke(messages)
+    parsed = parse_agent_response(response.content)
+    
+    new_message = create_message("DEFENSE", parsed["clean_content"], state["phase"])
+    
+    return {
+        "messages": [new_message],
+        "next_speaker": parsed["next_speaker"] or "CONSUMER",
+        "turn_count": state["turn_count"] + 1,
+        "last_significant_statement": parsed["clean_content"][:500],
+        "awaiting_human_input": parsed["next_speaker"] == "CONSUMER"
+    }
+
+
+def consumer_input_node(state: CourtroomState) -> dict:
+    """Human input node for consumer/complainant."""
+    # This node handles the human input that was collected
+    # The actual input collection happens in the main loop
+    return {
+        "awaiting_human_input": False,
+        "next_speaker": "ROUTER"
+    }
+
+
+def router_node(state: CourtroomState) -> dict:
+    """Router node to determine next speaker based on context."""
+    llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.1)
+    
+    last_msg = state["messages"][-1] if state["messages"] else {"speaker": "SYSTEM", "content": ""}
+    
+    system_prompt = ROUTER_SYSTEM_PROMPT.format(
+        phase=state["phase"],
+        last_speaker=last_msg["speaker"],
+        last_statement=last_msg["content"][:300],
+        turn_count=state["turn_count"],
+        concluded=state["concluded"],
+        recent_messages=format_recent_messages(state["messages"], 5)
+    )
+    
+    response = llm.invoke([
+        SystemMessage(content=system_prompt),
+        HumanMessage(content="Determine the next speaker and any phase changes.")
+    ])
+    
+    try:
+        # Try to parse JSON response
+        result = json.loads(response.content)
+        next_speaker = result.get("next_speaker", "CONSUMER")
+        phase_change = result.get("suggest_phase_change")
+        should_conclude = result.get("should_conclude", False)
+    except json.JSONDecodeError:
+        # Fallback to simple alternation
+        if last_msg["speaker"] == "CONSUMER":
+            next_speaker = "DEFENSE"
+        elif last_msg["speaker"] == "DEFENSE":
+            next_speaker = "JUDGE"
+        else:
+            next_speaker = "CONSUMER"
+        phase_change = None
+        should_conclude = False
+    
+    updates = {
+        "next_speaker": next_speaker,
+        "awaiting_human_input": next_speaker == "CONSUMER"
+    }
+    
+    if phase_change and phase_change in ["arguments", "evidence", "closing", "verdict"]:
+        updates["phase"] = phase_change
+        if phase_change == "verdict":
+            updates["concluded"] = True
+    
+    if should_conclude:
+        updates["concluded"] = True
+    
+    return updates
+
+
+def verdict_node(state: CourtroomState) -> dict:
+    """Final verdict generation node."""
+    llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.2)
+    
+    # Compile all proceedings
+    all_messages = "\n\n".join([
+        f"[{m['speaker']}] ({m['phase']}): {m['content']}"
+        for m in state["messages"]
+    ])
+    
+    # Compile all judgment updates
+    updates_summary = "\n".join([
+        f"  • {u['field']}: {u['old_value']} → {u['new_value']} (Reason: {u['reason']})"
+        for u in state["judgment_updates"]
+    ]) if state["judgment_updates"] else "  No modifications during proceedings."
+    
+    verdict_prompt = f"""
+As the presiding Judge, deliver the FINAL JUDGMENT in this matter.
+
+═══════════════════════════════════════════════════════════════════════════════
+                         COMPLETE CASE RECORD
+═══════════════════════════════════════════════════════════════════════════════
+
+{format_case_details(state["judgment_data"])}
+
+═══════════════════════════════════════════════════════════════════════════════
+                         PROCEEDINGS SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+Total Hearings: {state["hearing_number"]}
+Total Exchanges: {state["turn_count"]}
+
+Judgment Modifications During Trial:
+{updates_summary}
+
+═══════════════════════════════════════════════════════════════════════════════
+                         FULL PROCEEDINGS TRANSCRIPT
+═══════════════════════════════════════════════════════════════════════════════
+
+{all_messages}
+
+═══════════════════════════════════════════════════════════════════════════════
+                         JUDGMENT FORMAT REQUIRED
+═══════════════════════════════════════════════════════════════════════════════
+
+Deliver a formal judgment including:
+
+1. CASE TITLE AND PARTIES
+
+2. BRIEF FACTS
+
+3. ISSUES FOR DETERMINATION
+
+4. ANALYSIS AND FINDINGS ON EACH ISSUE
+   - Cite relevant evidence and arguments
+   - Apply applicable law
+   - Reference precedents where helpful
+
+5. CONCLUSION ON LIABILITY
+
+6. RELIEF/ORDER
+   - Specific amounts if compensation awarded
+   - Timeline for compliance
+   - Any other directions
+
+7. COSTS
+
+8. DATED AND SIGNED
+
+Use formal judicial language appropriate for an Indian Consumer Court judgment.
+"""
+
+    response = llm.invoke([
+        SystemMessage(content="You are an experienced Judge delivering a formal judgment."),
+        HumanMessage(content=verdict_prompt)
+    ])
+    
+    verdict_message = create_message("JUDGE", response.content, "verdict")
+    
+    # Create verdict details
+    rg = state["judgment_data"].get("Relief_Granted", {})
+    verdict_details = VerdictDetails(
+        summary="Judgment pronounced after full hearing",
+        issues_determined=state["judgment_data"].get("Judgment_Reasoning", {}).get("Issues_Framed", []),
+        final_order=response.content,
+        relief_granted=rg,
+        costs="As awarded in judgment",
+        pronounced_on=datetime.now().strftime("%d %B %Y")
+    )
+    
+    return {
+        "messages": [verdict_message],
+        "verdict": verdict_details,
+        "concluded": True,
+        "phase": "verdict",
+        "next_speaker": "END"
+    }
+
+
+# ============================================================================
+# Graph Edges (Routing Logic)
+# ============================================================================
+
+def should_continue(state: CourtroomState) -> str:
+    """Determine if simulation should continue or end."""
+    if state["concluded"]:
+        if state.get("verdict"):
+            return "end"
+        else:
+            return "verdict"
+    
+    if state["turn_count"] >= 30:  # Safety limit
+        return "verdict"
+    
+    return "route"
+
+
+def route_to_speaker(state: CourtroomState) -> str:
+    """Route to the appropriate speaker node."""
+    next_speaker = state.get("next_speaker", "CONSUMER")
+    
+    if next_speaker == "JUDGE":
+        return "judge"
+    elif next_speaker == "DEFENSE":
+        return "defense"
+    elif next_speaker == "CONSUMER":
+        return "consumer_input"
+    else:
+        return "router"
+
+
+# ============================================================================
+# Graph Construction
+# ============================================================================
+
+def build_courtroom_graph():
+    """Build the LangGraph courtroom simulation graph."""
+    
+    # Create the graph with our state schema
+    workflow = StateGraph(CourtroomState)
+    
+    # Add nodes
+    workflow.add_node("judge", judge_node)
+    workflow.add_node("defense", defense_node)
+    workflow.add_node("consumer_input", consumer_input_node)
+    workflow.add_node("router", router_node)
+    workflow.add_node("verdict", verdict_node)
+    
+    # Set entry point - Judge opens proceedings
+    workflow.set_entry_point("judge")
+    
+    # Add edges from judge
+    workflow.add_conditional_edges(
+        "judge",
+        should_continue,
+        {
+            "route": "router",
+            "verdict": "verdict",
+            "end": END
+        }
+    )
+    
+    # Add edges from defense
+    workflow.add_conditional_edges(
+        "defense",
+        should_continue,
+        {
+            "route": "router",
+            "verdict": "verdict",
+            "end": END
+        }
+    )
+    
+    # Consumer input goes to router
+    workflow.add_edge("consumer_input", "router")
+    
+    # Router determines next speaker
+    workflow.add_conditional_edges(
+        "router",
+        route_to_speaker,
+        {
+            "judge": "judge",
+            "defense": "defense",
+            "consumer_input": "consumer_input"
+        }
+    )
+    
+    # Verdict goes to end
+    workflow.add_edge("verdict", END)
+    
+    # Compile with memory checkpointing
+    memory = MemorySaver()
+    return workflow.compile(checkpointer=memory)
+
+
+# ============================================================================
+# Console Interface
+# ============================================================================
 
 def print_courtroom_header():
     """Print courtroom header."""
-    print("\n" + "=" * 80)
-    print("                    DISTRICT CONSUMER DISPUTES REDRESSAL COMMISSION")
-    print("                              COURTROOM SIMULATION")
-    print("=" * 80)
+    print("\n" + "═" * 80)
+    print("          DISTRICT CONSUMER DISPUTES REDRESSAL COMMISSION")
+    print("                      COURTROOM SIMULATION")
+    print("═" * 80)
 
 
-def print_phase_header(phase: str, hearing_num: int):
-    """Print phase header."""
-    print(f"\n{'─' * 80}")
-    print(f"  HEARING #{hearing_num} | PHASE: {phase.upper()}")
-    print(f"{'─' * 80}\n")
-
-
-def print_speaker(speaker: str, message: str, color_code: str = ""):
-    """Print a speaker's message with formatting."""
-    prefix_map = {
-        "JUDGE": "⚖️  HON'BLE JUDGE:",
-        "DEFENSE": "👔 DEFENSE COUNSEL:",
-        "CONSUMER": "👤 COMPLAINANT:",
-        "SYSTEM": "📋 COURT CLERK:"
+def print_phase_banner(phase: str, hearing: int):
+    """Print phase banner."""
+    phase_names = {
+        "opening": "OPENING OF PROCEEDINGS",
+        "arguments": "ARGUMENTS",
+        "evidence": "EVIDENCE EXAMINATION",
+        "closing": "CLOSING SUBMISSIONS",
+        "verdict": "FINAL JUDGMENT"
     }
-    prefix = prefix_map.get(speaker, speaker + ":")
-    print(f"\n{prefix}")
-    print("-" * 40)
-    # Word wrap the message
-    words = message.split()
-    line = ""
-    for word in words:
-        if len(line) + len(word) + 1 <= 76:
-            line += (" " if line else "") + word
-        else:
-            print(f"  {line}")
-            line = word
-    if line:
-        print(f"  {line}")
+    print(f"\n{'─' * 80}")
+    print(f"  📋 HEARING #{hearing} | {phase_names.get(phase, phase.upper())}")
+    print(f"{'─' * 80}")
+
+
+def print_message(message: Message):
+    """Print a courtroom message with formatting."""
+    speaker_icons = {
+        "JUDGE": "⚖️  HON'BLE JUDGE",
+        "DEFENSE": "👔 DEFENSE COUNSEL",
+        "CONSUMER": "👤 COMPLAINANT",
+        "SYSTEM": "📋 COURT CLERK"
+    }
+    
+    speaker = speaker_icons.get(message["speaker"], message["speaker"])
+    print(f"\n{speaker}:")
+    print("─" * 40)
+    
+    # Word wrap
+    content = message["content"]
+    lines = content.split('\n')
+    for line in lines:
+        words = line.split()
+        current_line = "  "
+        for word in words:
+            if len(current_line) + len(word) + 1 <= 78:
+                current_line += word + " "
+            else:
+                print(current_line)
+                current_line = "  " + word + " "
+        if current_line.strip():
+            print(current_line)
     print()
 
 
-# ============================================================================
-# Agent Classes
-# ============================================================================
-
-class JudgeAgent:
-    """The Judge Agent that presides over the case."""
-    
-    def __init__(self, judgment_data: dict):
-        self.llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.3)
-        self.judgment_data = judgment_data
-        self.hearing_number = 1
-        self.case_phase = "opening"
-        
-    def get_system_prompt(self) -> str:
-        """Generate the system prompt with current case state."""
-        return JUDGE_SYSTEM_PROMPT.format(
-            case_summary=format_case_summary(self.judgment_data),
-            legal_grounds=format_legal_grounds(self.judgment_data),
-            judgment_reasoning=format_judgment_reasoning(self.judgment_data),
-            relief_granted=format_relief_granted(self.judgment_data),
-            hearing_number=self.hearing_number,
-            case_phase=self.case_phase
-        )
-    
-    def respond(self, conversation_history: list, last_message: str) -> tuple[str, list[dict], bool]:
-        """
-        Generate judge's response.
-        
-        Returns:
-            Tuple of (response_text, updates_made, case_concluded)
-        """
-        messages = [SystemMessage(content=self.get_system_prompt())]
-        messages.extend(conversation_history)
-        messages.append(HumanMessage(content=last_message))
-        
-        response = self.llm.invoke(messages)
-        response_text = response.content
-        
-        # Check if verdict is being delivered
-        case_concluded = "[VERDICT]" in response_text
-        if case_concluded:
-            response_text = response_text.replace("[VERDICT]", "").strip()
-        
-        # Parse any judgment updates
-        clean_response, self.judgment_data, updates = parse_judge_updates(
-            response_text, self.judgment_data
-        )
-        
-        return clean_response, updates, case_concluded
-    
-    def advance_phase(self):
-        """Advance the case phase."""
-        phases = ["opening", "arguments", "evidence", "closing", "verdict"]
-        current_idx = phases.index(self.case_phase)
-        if current_idx < len(phases) - 1:
-            self.case_phase = phases[current_idx + 1]
-    
-    def new_hearing(self):
-        """Start a new hearing."""
-        self.hearing_number += 1
+def print_judgment_update(update: JudgmentUpdate):
+    """Print a judgment update notification."""
+    print(f"\n📝 COURT RECORD UPDATED:")
+    print(f"   Field: {update['field']}")
+    if update['old_value']:
+        print(f"   Previous: {update['old_value']}")
+    print(f"   Updated to: {update['new_value']}")
+    print(f"   Reason: {update['reason']}")
 
 
-class OppositePartyLawyer:
-    """The Opposite Party Lawyer Agent."""
+def get_consumer_input() -> str:
+    """Get input from the human user (consumer)."""
+    print("\n" + "─" * 40)
+    print("  YOUR TURN (Consumer/Complainant)")
+    print("─" * 40)
+    print("  Commands:")
+    print("    Type your statement or argument")
+    print("    'evidence' - Present documentary evidence")
+    print("    'rest' - Rest your case")
+    print("    'quit' - Exit simulation")
+    print()
     
-    def __init__(self, judgment_data: dict):
-        self.llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.5)
-        self.judgment_data = judgment_data
-        self.synthetic_materials = []
-        
-    def get_system_prompt(self, last_statement: str, hearing_number: int) -> str:
-        """Generate the system prompt."""
-        return OPPOSITE_PARTY_LAWYER_PROMPT.format(
-            case_summary=format_case_summary(self.judgment_data),
-            defense_arguments=format_defense_arguments(self.judgment_data),
-            applicable_sections=format_applicable_sections(self.judgment_data),
-            consumer_arguments=format_consumer_arguments(self.judgment_data),
-            hearing_number=hearing_number,
-            last_statement=last_statement
-        )
+    user_input = input("  Your statement: ").strip()
     
-    def respond(self, conversation_history: list, last_statement: str, hearing_number: int) -> str:
-        """Generate defense lawyer's response."""
-        messages = [SystemMessage(content=self.get_system_prompt(last_statement, hearing_number))]
-        messages.extend(conversation_history)
-        
-        response = self.llm.invoke(messages)
-        return response.content
-
-
-# ============================================================================
-# Main Simulation
-# ============================================================================
+    if user_input.lower() == 'quit':
+        return None
+    elif user_input.lower() == 'rest':
+        return "Your Honor, I have presented all my evidence and arguments. I rest my case and pray for the relief claimed in my complaint."
+    elif user_input.lower() == 'evidence':
+        print("\n  Describe the evidence you wish to present:")
+        evidence = input("  Evidence: ").strip()
+        return f"Your Honor, I wish to place on record the following evidence: {evidence}"
+    
+    return user_input
 
 def run_courtroom_simulation(judgment_file_path: str):
     """
-    Run the courtroom simulation.
+    Run the courtroom simulation with explicit turn-based flow.
     
     Args:
         judgment_file_path: Path to the judgment prediction JSON file
@@ -463,153 +1077,242 @@ def run_courtroom_simulation(judgment_file_path: str):
     judgment_data = load_judgment_json(judgment_file_path)
     original_data = json.loads(json.dumps(judgment_data))  # Deep copy
     
-    # Initialize agents
-    judge = JudgeAgent(judgment_data)
-    defense = OppositePartyLawyer(judgment_data)
-    
     # Case information
     case_title = judgment_data.get("Case_Summary", {}).get("Title", "Consumer Case")
     print(f"\n📋 CASE: {case_title}")
     print(f"📅 Date: {datetime.now().strftime('%d %B %Y')}")
     
-    # Conversation history for context
-    conversation_history = []
-    proceedings_log = []
+    print("\n⚙️  Initializing courtroom simulation...")
     
-    # Opening statement from Judge
-    print_phase_header("Opening", judge.hearing_number)
+    # Initialize state
+    current_state: CourtroomState = {
+        "messages": [],
+        "judgment_data": judgment_data,
+        "judgment_updates": [],
+        "phase": "opening",
+        "hearing_number": 1,
+        "turn_count": 0,
+        "concluded": False,
+        "next_speaker": "JUDGE",
+        "last_significant_statement": "",
+        "awaiting_human_input": False,
+        "verdict": None,
+        "original_judgment_data": original_data,
+        "case_file_path": judgment_file_path,
+        "pending_questions": []
+    }
     
-    opening_prompt = """The court is now in session. This case concerns a consumer complaint regarding 
-a defective product. I have reviewed the case file and the preliminary judgment assessment.
-
-I call upon the Complainant to present their case first. Please state your grievance clearly 
-for the record."""
+    print("\n" + "═" * 80)
+    print("                         PROCEEDINGS BEGIN")
+    print("═" * 80)
     
-    judge_response, updates, concluded = judge.respond(conversation_history, opening_prompt)
-    print_speaker("JUDGE", judge_response)
-    conversation_history.append(AIMessage(content=f"[JUDGE]: {judge_response}"))
-    proceedings_log.append({"speaker": "JUDGE", "message": judge_response, "hearing": 1})
+    current_phase = "opening"
+    current_hearing = 1
+    print_phase_banner(current_phase, current_hearing)
     
-    # Main simulation loop
-    turn_count = 0
-    max_turns = 20  # Safety limit
+    # Main simulation loop - explicit turn-based
+    simulation_running = True
+    judge_intervention_counter = 0  # Track turns since last judge intervention
     
-    while not concluded and turn_count < max_turns:
-        turn_count += 1
+    while simulation_running and not current_state["concluded"]:
+        try:
+            next_speaker = current_state.get("next_speaker", "JUDGE")
+            
+            # ─────────────────────────────────────────────────────────────
+            # JUDGE'S TURN
+            # ─────────────────────────────────────────────────────────────
+            if next_speaker == "JUDGE":
+                print("\n💭 The Hon'ble Judge is considering...")
+                result = judge_node(current_state)
+                judge_intervention_counter = 0  # Reset counter
+                
+                # Update state
+                for key, value in result.items():
+                    if key == "messages" and isinstance(value, list):
+                        current_state["messages"].extend(value)
+                        for msg in value:
+                            print_message(msg)
+                    elif key == "judgment_updates" and isinstance(value, list):
+                        current_state["judgment_updates"].extend(value)
+                        for update in value:
+                            print_judgment_update(update)
+                    else:
+                        current_state[key] = value
+                
+                # Check phase change
+                if current_state["phase"] != current_phase:
+                    current_phase = current_state["phase"]
+                    print_phase_banner(current_phase, current_state["hearing_number"])
+                
+                # Check if verdict phase
+                if current_state["phase"] == "verdict" and not current_state.get("verdict"):
+                    current_state["next_speaker"] = "VERDICT"
+                    continue
+            
+            # ─────────────────────────────────────────────────────────────
+            # CONSUMER'S TURN (Human Input)
+            # ─────────────────────────────────────────────────────────────
+            elif next_speaker == "CONSUMER":
+                user_input = get_consumer_input()
+                
+                if user_input is None:
+                    print("\n⚠️  Simulation terminated by user.")
+                    simulation_running = False
+                    break
+                
+                # Add user message
+                user_message = create_message("CONSUMER", user_input, current_state["phase"])
+                current_state["messages"].append(user_message)
+                print_message(user_message)
+                current_state["turn_count"] += 1
+                judge_intervention_counter += 1
+                
+                # After consumer speaks, DEFENSE should respond
+                current_state["next_speaker"] = "DEFENSE"
+            
+            # ─────────────────────────────────────────────────────────────
+            # DEFENSE'S TURN
+            # ─────────────────────────────────────────────────────────────
+            elif next_speaker == "DEFENSE":
+                print("\n💭 Defense counsel is preparing response...")
+                result = defense_node(current_state)
+                judge_intervention_counter += 1
+                
+                # Update state
+                for key, value in result.items():
+                    if key == "messages" and isinstance(value, list):
+                        current_state["messages"].extend(value)
+                        for msg in value:
+                            print_message(msg)
+                    else:
+                        current_state[key] = value
+                
+                # Decide if Judge should intervene or let consumer respond
+                # Judge intervenes if:
+                # 1. Defense explicitly asks for Judge (next_speaker from response)
+                # 2. Every 4-6 exchanges for observations
+                # 3. Phase transition is needed
+                # 4. Significant evidence was presented
+                
+                defense_response = current_state["messages"][-1]["content"].lower()
+                needs_judge = False
+                
+                # Check if defense asked for judge
+                if result.get("next_speaker") == "JUDGE":
+                    needs_judge = True
+                
+                # Check for significant moments requiring judicial observation
+                significant_keywords = [
+                    "exhibit", "affidavit", "submit", "produce", "place on record",
+                    "your honor", "may it please the court", "conclusively",
+                    "no evidence", "burden of proof", "fabricat", "false"
+                ]
+                if any(kw in defense_response for kw in significant_keywords):
+                    # 50% chance judge comments on significant evidence
+                    if judge_intervention_counter >= 2:
+                        needs_judge = True
+                
+                # Periodic intervention (every 4-6 exchanges)
+                if judge_intervention_counter >= 4:
+                    needs_judge = True
+                
+                # Set next speaker
+                if needs_judge:
+                    current_state["next_speaker"] = "JUDGE"
+                else:
+                    # Let consumer respond directly
+                    current_state["next_speaker"] = "CONSUMER"
+            
+            # ─────────────────────────────────────────────────────────────
+            # VERDICT GENERATION
+            # ─────────────────────────────────────────────────────────────
+            elif next_speaker == "VERDICT":
+                print("\n⚖️  The Hon'ble Judge is preparing the final verdict...")
+                print_phase_banner("verdict", current_state["hearing_number"])
+                
+                result = verdict_node(current_state)
+                
+                # Update state
+                for key, value in result.items():
+                    if key == "messages" and isinstance(value, list):
+                        current_state["messages"].extend(value)
+                        for msg in value:
+                            print_message(msg)
+                    else:
+                        current_state[key] = value
+                
+                current_state["concluded"] = True
+                simulation_running = False
+            
+            # ─────────────────────────────────────────────────────────────
+            # ROUTER (fallback)
+            # ─────────────────────────────────────────────────────────────
+            else:
+                # Use router to determine next speaker
+                result = router_node(current_state)
+                for key, value in result.items():
+                    current_state[key] = value
+            
+            # Safety check for maximum turns
+            if current_state.get("turn_count", 0) >= 30:
+                print("\n⚠️  Maximum turns reached. Proceeding to verdict...")
+                current_state["next_speaker"] = "VERDICT"
         
-        # Consumer's turn (user input)
-        print("\n" + "─" * 40)
-        print("YOUR TURN (Consumer/Complainant)")
-        print("─" * 40)
-        print("Options:")
-        print("  - Type your argument/statement")
-        print("  - Type 'evidence' to present evidence")
-        print("  - Type 'rest' to rest your case")
-        print("  - Type 'quit' to exit simulation")
-        print()
-        
-        user_input = input("Your statement: ").strip()
-        
-        if user_input.lower() == 'quit':
-            print("\n⚠️  Simulation terminated by user.")
-            break
-        
-        if user_input.lower() == 'rest':
-            user_input = "Your Honor, I rest my case. I believe the evidence and arguments presented clearly establish the defect in the product and the seller's deficiency in service."
-        
-        print_speaker("CONSUMER", user_input)
-        conversation_history.append(HumanMessage(content=f"[CONSUMER]: {user_input}"))
-        proceedings_log.append({"speaker": "CONSUMER", "message": user_input, "hearing": judge.hearing_number})
-        
-        # Defense's turn
-        print("\n💭 Defense counsel is preparing response...")
-        defense_response = defense.respond(
-            conversation_history, 
-            user_input, 
-            judge.hearing_number
-        )
-        print_speaker("DEFENSE", defense_response)
-        conversation_history.append(AIMessage(content=f"[DEFENSE]: {defense_response}"))
-        proceedings_log.append({"speaker": "DEFENSE", "message": defense_response, "hearing": judge.hearing_number})
-        
-        # Judge's turn
-        print("\n💭 The Hon'ble Judge is considering...")
-        combined_input = f"""
-The Consumer has stated: "{user_input}"
-
-The Defense Counsel has responded: "{defense_response}"
-
-Please provide your observations, questions, or if you feel the case is ready, proceed to deliver judgment.
-"""
-        judge_response, updates, concluded = judge.respond(conversation_history, combined_input)
-        
-        # Report any judgment modifications
-        if updates:
-            print("\n📝 COURT RECORD UPDATE:")
-            for update in updates:
-                print(f"   • Field '{update['field']}' modified")
-                print(f"     Reason: {update['reason']}")
-        
-        print_speaker("JUDGE", judge_response)
-        conversation_history.append(AIMessage(content=f"[JUDGE]: {judge_response}"))
-        proceedings_log.append({
-            "speaker": "JUDGE", 
-            "message": judge_response, 
-            "hearing": judge.hearing_number,
-            "updates": updates if updates else None
-        })
-        
-        # Check for phase advancement hints
-        if "next hearing" in judge_response.lower():
-            judge.new_hearing()
-            print_phase_header(judge.case_phase, judge.hearing_number)
-        elif any(word in judge_response.lower() for word in ["closing arguments", "final arguments"]):
-            judge.case_phase = "closing"
+        except KeyboardInterrupt:
+            print("\n\n⚠️  Simulation interrupted by user.")
+            simulation_running = False
+        except Exception as e:
+            print(f"\n❌ Error during simulation: {e}")
+            import traceback
+            traceback.print_exc()
+            simulation_running = False
     
-    # Final verdict handling
-    if concluded:
-        print("\n" + "=" * 80)
-        print("                              FINAL JUDGMENT")
-        print("=" * 80)
-        
-        # Generate formal verdict
-        verdict_prompt = f"""Based on all proceedings, please deliver the final formal judgment in the following format:
-
-1. Case Summary
-2. Issues for Determination
-3. Findings on Each Issue
-4. Order/Relief Granted
-5. Costs (if any)
-
-Current Relief in Record:
-{format_relief_granted(judge.judgment_data)}
-
-Deliver the verdict in a formal, judicial tone."""
-
-        final_verdict, _, _ = judge.respond(conversation_history, verdict_prompt)
-        print(final_verdict)
-    
-    # Save updated judgment and proceedings
+    # Save results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_dir = SIMULATION_DIR / f"courtroom_{timestamp}"
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Save final judgment
     final_judgment_path = output_dir / "final_judgment.json"
-    save_judgment_json(judge.judgment_data, str(final_judgment_path))
+    save_judgment_json(current_state["judgment_data"], str(final_judgment_path))
     print(f"\n✅ Final judgment saved to: {final_judgment_path}")
     
     # Save proceedings log
     proceedings_path = output_dir / "proceedings_log.json"
+    proceedings_log = {
+        "case_title": case_title,
+        "simulation_date": datetime.now().isoformat(),
+        "total_hearings": current_state.get("hearing_number", 1),
+        "total_turns": current_state.get("turn_count", 0),
+        "case_concluded": current_state.get("concluded", False),
+        "final_phase": current_state.get("phase", "unknown"),
+        "proceedings": [
+            {
+                "speaker": m["speaker"],
+                "content": m["content"],
+                "phase": m["phase"],
+                "timestamp": m["timestamp"]
+            }
+            for m in current_state["messages"]
+        ],
+        "judgment_modifications": [
+            {
+                "field": u["field"],
+                "old_value": u["old_value"],
+                "new_value": u["new_value"],
+                "reason": u["reason"],
+                "updated_by": u["updated_by"]
+            }
+            for u in current_state.get("judgment_updates", [])
+        ]
+    }
+    
+    # Add verdict if available
+    if current_state.get("verdict"):
+        proceedings_log["verdict"] = current_state["verdict"]
+    
     with open(proceedings_path, "w", encoding="utf-8") as f:
-        json.dump({
-            "case_title": case_title,
-            "simulation_date": datetime.now().isoformat(),
-            "total_hearings": judge.hearing_number,
-            "total_turns": turn_count,
-            "case_concluded": concluded,
-            "proceedings": proceedings_log
-        }, f, indent=2, ensure_ascii=False)
+        json.dump(proceedings_log, f, indent=2, ensure_ascii=False)
     print(f"✅ Proceedings log saved to: {proceedings_path}")
     
     # Save comparison
@@ -617,13 +1320,17 @@ Deliver the verdict in a formal, judicial tone."""
     with open(comparison_path, "w", encoding="utf-8") as f:
         json.dump({
             "original_prediction": original_data,
-            "final_judgment": judge.judgment_data
+            "final_judgment": current_state["judgment_data"],
+            "modifications_count": len(current_state.get("judgment_updates", [])),
+            "total_exchanges": current_state.get("turn_count", 0)
         }, f, indent=2, ensure_ascii=False)
     print(f"✅ Judgment comparison saved to: {comparison_path}")
     
-    print("\n" + "=" * 80)
+    print("\n" + "═" * 80)
     print("                         SIMULATION COMPLETE")
-    print("=" * 80)
+    print("═" * 80)
+    
+    return current_state
 
 
 # ============================================================================

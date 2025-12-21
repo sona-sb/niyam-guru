@@ -1,0 +1,29 @@
+{
+  "case_title": "Consumer vs. The Mobile Phone Seller",
+  "simulation_date": "2025-12-13T17:16:00.987669",
+  "total_hearings": 1,
+  "total_turns": 2,
+  "case_concluded": false,
+  "final_phase": "opening",
+  "proceedings": [
+    {
+      "speaker": "JUDGE",
+      "content": "This matter comes before me as a consumer complaint under Section 35 of the Consumer Protection Act, 2019, concerning a defective mobile phone purchased by the Complainant from the Opposite Party. The gravamen of the grievance appears to be the explosion of a newly purchased mobile phone within 24 hours, and the subsequent refusal by the seller to provide a refund, replacement, or repair, alleging consumer fault without substantiation.\n\nThe issues framed for consideration are:\n1.  Whether the mobile phone that exploded within one day of purchase can be considered a 'defective' good under the Consumer Protection Act, 2019?\n2.  Whether the seller's refusal to provide a remedy and blaming the user constitutes a 'deficiency in service'?\n3.  Whether the consumer is entitled to a refund and compensation?\n\nLearned Complainant, you may present your initial statement to the Commission.",
+      "phase": "opening",
+      "timestamp": "2025-12-13T17:15:29.503924"
+    },
+    {
+      "speaker": "CONSUMER",
+      "content": "Much obliged, Learned Forum. The complainant respectfully submits that the facts of the present case clearly demonstrate a grave instance of sale of defective goods and consequent denial of consumer rights. The complainant purchased a brand-new mobile phone from the Opposite Party for valuable consideration, with the legitimate expectation that the product would be safe, functional, and fit for its ordinary use. Shockingly, within less than twenty-four hours of purchase, the mobile phone exploded during normal usage, rendering it completely unusable and exposing the complainant to serious risk of physical injury and property damage. Such an occurrence, at such an early stage, irresistibly raises a presumption of an inherent manufacturing defect, as no reasonable consumer could have misused the product to such an extent within a single day. The complainant used the device strictly in accordance with the manufacturers instructions, with the original charger provided, and there is no evidence whatsoever of overcharging, physical stress, or any unauthorized usage. The Opposite Partys refusal to offer a refund, replacement, or even facilitate inspection, and instead shifting the blame onto the consumer without conducting any technical examination, amounts to clear deficiency in service and an unfair trade practice under the Consumer Protection Act, 2019. The law does not require a consumer to produce expert evidence at the preliminary stage when the defect is apparent from the nature of the incident itself, particularly where the product poses a serious safety hazard. The complainant has suffered not only financial loss but also mental agony, fear, and harassment due to the Opposite Partys arbitrary and dismissive conduct. Therefore, the complainant humbly submits that the mobile phone qualifies as defective goods, the seller is guilty of deficiency in service, and the complainant is entitled to a full refund along with appropriate compensation for mental agony and costs, in the interest of justice and consumer safety.",
+      "phase": "opening",
+      "timestamp": "2025-12-13T17:15:44.495887"
+    },
+    {
+      "speaker": "JUDGE",
+      "content": "The Court has heard the initial statement from the learned Complainant. The Complainant has articulated the immediate manifestation of the defect, the safety concerns, and the alleged deficiency in service by the Opposite Party.\n\nLearned counsel for the Opposite Party, you may now present your initial statement to the Commission.",
+      "phase": "opening",
+      "timestamp": "2025-12-13T17:15:50.299430"
+    }
+  ],
+  "judgment_modifications": []
+}
