@@ -1,0 +1,1 @@
+export { ConsumerComplaintTemplate } from './ConsumerComplaintTemplate';

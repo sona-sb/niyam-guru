@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { NoiseOverlay } from '@/src/components/common/NoiseOverlay';
 
 export const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -9,6 +11,8 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     // Handle login logic here
     console.log('Login attempt:', { email, password });
+    // Navigate to mootcourt template after login
+    navigate('/mootcourt/template');
   };
 
   return (

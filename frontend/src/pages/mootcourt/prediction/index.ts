@@ -1,0 +1,1 @@
+export { VerdictPrediction } from './VerdictPrediction';
