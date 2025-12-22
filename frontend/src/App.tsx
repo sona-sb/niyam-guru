@@ -6,6 +6,7 @@ import { MyCases } from './pages/mainpage/MyCases';
 import { DocumentIntro } from './pages/mootcourt/intro/DocumentIntro';
 import { ConsumerComplaintTemplate } from './pages/mootcourt/template/ConsumerComplaintTemplate';
 import { ComplaintPreview } from './pages/mootcourt/preview/ComplaintPreview';
+import { DocumentZoomOut } from './pages/mootcourt/transition/DocumentZoomOut';
 import { JudgeQuestions } from './pages/mootcourt/questions/JudgeQuestions';
 import { VerdictPrediction } from './pages/mootcourt/prediction/VerdictPrediction';
 
@@ -19,6 +20,7 @@ const App: React.FC = () => {
         <Route path="/mootcourt/intro" element={<DocumentIntro />} />
         <Route path="/mootcourt/template" element={<ConsumerComplaintTemplate />} />
         <Route path="/mootcourt/preview" element={<ComplaintPreview />} />
+        <Route path="/mootcourt/transition" element={<DocumentZoomOut />} />
         <Route path="/mootcourt/questions" element={<JudgeQuestions />} />
         <Route path="/mootcourt/prediction" element={<VerdictPrediction />} />
       </Routes>

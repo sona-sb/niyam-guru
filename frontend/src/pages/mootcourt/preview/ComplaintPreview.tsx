@@ -72,8 +72,8 @@ export const ComplaintPreview: React.FC = () => {
     // Handle final submission logic here
     console.log('Submitting complaint:', formData);
     console.log('Attached files:', uploadedFiles);
-    // Navigate to judge questions page
-    navigate('/mootcourt/questions');
+    // Navigate to zoom out transition page
+    navigate('/mootcourt/transition');
   };
 
   const formatDate = (dateString: string) => {

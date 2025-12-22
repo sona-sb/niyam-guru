@@ -1,0 +1,1 @@
+export { DocumentZoomOut } from './DocumentZoomOut';
