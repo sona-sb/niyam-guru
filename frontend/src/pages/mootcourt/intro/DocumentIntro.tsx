@@ -408,11 +408,13 @@ export const DocumentIntro: React.FC = () => {
         if (easedProgress > 0.6) {
           const whitePhase = (easedProgress - 0.6) / 0.4;
           const whiteEased = easeOutCubic(whitePhase);
-          scene.background.setRGB(
-            lerp(0.71, 1, whiteEased),
-            lerp(0.69, 1, whiteEased),
-            lerp(0.66, 1, whiteEased)
-          );
+          if (scene.background instanceof THREE.Color) {
+            scene.background.setRGB(
+              lerp(0.71, 1, whiteEased),
+              lerp(0.69, 1, whiteEased),
+              lerp(0.66, 1, whiteEased)
+            );
+          }
           
           frontMaterial.color.setRGB(
             lerp(1, 1, whiteEased),

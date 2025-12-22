@@ -365,11 +365,13 @@ export const DocumentZoomOut: React.FC = () => {
           const fadePhase = progress / 0.15;
           const fadeEased = easeOutCubic(fadePhase);
           
-          scene.background.setRGB(
-            lerp(1, 0.91, fadeEased),
-            lerp(1, 0.894, fadeEased),
-            lerp(1, 0.875, fadeEased)
-          );
+          if (scene.background instanceof THREE.Color) {
+            scene.background.setRGB(
+              lerp(1, 0.91, fadeEased),
+              lerp(1, 0.894, fadeEased),
+              lerp(1, 0.875, fadeEased)
+            );
+          }
           
           frontMaterial.emissive.setRGB(
             lerp(0.5, 0, fadeEased),
