@@ -111,7 +111,7 @@ export const ComplaintPreview: React.FC = () => {
     return '📎';
   };
 
-  const sectionClass = 'bg-white border border-black/10 rounded-2xl p-6 md:p-8 mb-6';
+  const sectionClass = 'bg-[#fbf7ef] border border-black/10 rounded-2xl p-6 md:p-8 mb-6';
   const sectionTitleClass = 'font-serif text-xl md:text-2xl text-black mb-6 pb-4 border-b border-black/10';
   const labelClass = 'font-sans text-sm text-black/50 mb-1';
   const valueClass = 'font-sans text-base text-black';
@@ -119,7 +119,7 @@ export const ComplaintPreview: React.FC = () => {
 
   if (!formData) {
     return (
-      <div className="relative min-h-screen w-full bg-white flex items-center justify-center">
+      <div className="relative min-h-screen w-full bg-[#fbf7ef] flex items-center justify-center">
         <NoiseOverlay />
         <div className="relative z-10 text-center">
           <p className="font-sans text-lg text-black/70 mb-4">No complaint data found.</p>
@@ -132,7 +132,7 @@ export const ComplaintPreview: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-[#FAFAFA]">
+    <div className="relative min-h-screen w-full bg-[#fbf7ef]">
       <NoiseOverlay />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
@@ -176,180 +176,189 @@ export const ComplaintPreview: React.FC = () => {
 
         {/* Scrollable Content */}
         <div className="space-y-6">
-          {/* Forum Details */}
+          {/* Section 1: Case Details */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
               <span className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">1</span>
-                Forum Details
+                Case Details
               </span>
             </h3>
-            <div className={gridClass}>
-              <div>
-                <p className={labelClass}>Consumer Forum</p>
-                <p className={valueClass}>{formData.forumName || 'Not provided'}</p>
+            
+            {/* Forum Details */}
+            <div className="mb-6">
+              <h4 className="font-serif text-lg text-black mb-4">Forum Details</h4>
+              <div className={gridClass}>
+                <div>
+                  <p className={labelClass}>Consumer Forum</p>
+                  <p className={valueClass}>{formData.forumName || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>District</p>
+                  <p className={valueClass}>{formData.districtName || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>State</p>
+                  <p className={valueClass}>{formData.stateName || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Complaint Year</p>
+                  <p className={valueClass}>{formData.complaintYear || 'Not provided'}</p>
+                </div>
               </div>
-              <div>
-                <p className={labelClass}>District</p>
-                <p className={valueClass}>{formData.districtName || 'Not provided'}</p>
+            </div>
+
+            {/* Transaction Details */}
+            <div className="mb-6 pt-6 border-t border-black/10">
+              <h4 className="font-serif text-lg text-black mb-4">Transaction Details</h4>
+              <div className={gridClass}>
+                <div className="md:col-span-2">
+                  <p className={labelClass}>Product/Service Description</p>
+                  <p className={valueClass}>{formData.productServiceDescription || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Date of Purchase</p>
+                  <p className={valueClass}>{formatDate(formData.purchaseDate)}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Amount Paid</p>
+                  <p className={`${valueClass} font-medium`}>{formatCurrency(formData.purchaseAmount)}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Mode of Payment</p>
+                  <p className={valueClass}>{formData.paymentMode || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Invoice/Receipt Number</p>
+                  <p className={valueClass}>{formData.invoiceNumber || 'Not provided'}</p>
+                </div>
               </div>
-              <div>
-                <p className={labelClass}>State</p>
-                <p className={valueClass}>{formData.stateName || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Complaint Year</p>
-                <p className={valueClass}>{formData.complaintYear || 'Not provided'}</p>
+            </div>
+
+            {/* Grievance Details */}
+            <div className="pt-6 border-t border-black/10">
+              <h4 className="font-serif text-lg text-black mb-4">Grievance Details</h4>
+              <div className={gridClass}>
+                <div>
+                  <p className={labelClass}>Type of Deficiency</p>
+                  <p className={valueClass}>{formData.deficiencyType || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Date of Deficiency</p>
+                  <p className={valueClass}>{formatDate(formData.dateOfDeficiency)}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className={labelClass}>Detailed Description of Grievance</p>
+                  <p className={`${valueClass} whitespace-pre-wrap`}>{formData.grievanceDescription || 'Not provided'}</p>
+                </div>
               </div>
             </div>
           </section>
 
-          {/* Complainant Details */}
+          {/* Section 2: Complainant / Opposite Party */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
               <span className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">2</span>
-                Complainant Details
+                Complainant / Opposite Party
               </span>
             </h3>
-            <div className={gridClass}>
-              <div>
-                <p className={labelClass}>Full Name</p>
-                <p className={valueClass}>{formData.complainantName || 'Not provided'}</p>
+            
+            {/* Complainant Details */}
+            <div className="mb-6">
+              <h4 className="font-serif text-lg text-black mb-4">Complainant Details</h4>
+              <div className={gridClass}>
+                <div>
+                  <p className={labelClass}>Full Name</p>
+                  <p className={valueClass}>{formData.complainantName || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Father's/Husband's Name</p>
+                  <p className={valueClass}>{formData.complainantFatherHusbandName || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Age</p>
+                  <p className={valueClass}>{formData.complainantAge ? `${formData.complainantAge} years` : 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Occupation</p>
+                  <p className={valueClass}>{formData.complainantOccupation || 'Not provided'}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className={labelClass}>Address</p>
+                  <p className={valueClass}>{formData.complainantAddress || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Phone Number</p>
+                  <p className={valueClass}>{formData.complainantPhone || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Email Address</p>
+                  <p className={valueClass}>{formData.complainantEmail || 'Not provided'}</p>
+                </div>
               </div>
-              <div>
-                <p className={labelClass}>Father's/Husband's Name</p>
-                <p className={valueClass}>{formData.complainantFatherHusbandName || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Age</p>
-                <p className={valueClass}>{formData.complainantAge ? `${formData.complainantAge} years` : 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Occupation</p>
-                <p className={valueClass}>{formData.complainantOccupation || 'Not provided'}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className={labelClass}>Address</p>
-                <p className={valueClass}>{formData.complainantAddress || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Phone Number</p>
-                <p className={valueClass}>{formData.complainantPhone || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Email Address</p>
-                <p className={valueClass}>{formData.complainantEmail || 'Not provided'}</p>
+            </div>
+
+            {/* Opposite Party Details */}
+            <div className="pt-6 border-t border-black/10">
+              <h4 className="font-serif text-lg text-black mb-4">Opposite Party Details</h4>
+              <div className={gridClass}>
+                <div>
+                  <p className={labelClass}>Name/Company Name</p>
+                  <p className={valueClass}>{formData.oppositePartyName || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Designation/Position</p>
+                  <p className={valueClass}>{formData.oppositePartyDesignation || 'Not provided'}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className={labelClass}>Address</p>
+                  <p className={valueClass}>{formData.oppositePartyAddress || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Phone Number</p>
+                  <p className={valueClass}>{formData.oppositePartyPhone || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className={labelClass}>Email Address</p>
+                  <p className={valueClass}>{formData.oppositePartyEmail || 'Not provided'}</p>
+                </div>
               </div>
             </div>
           </section>
 
-          {/* Opposite Party Details */}
+          {/* Section 3: Additional Complainant */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
               <span className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">3</span>
-                Opposite Party Details
+                Additional Complainant
               </span>
             </h3>
-            <div className={gridClass}>
-              <div>
-                <p className={labelClass}>Name/Company Name</p>
-                <p className={valueClass}>{formData.oppositePartyName || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Designation/Position</p>
-                <p className={valueClass}>{formData.oppositePartyDesignation || 'Not provided'}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className={labelClass}>Address</p>
-                <p className={valueClass}>{formData.oppositePartyAddress || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Phone Number</p>
-                <p className={valueClass}>{formData.oppositePartyPhone || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Email Address</p>
-                <p className={valueClass}>{formData.oppositePartyEmail || 'Not provided'}</p>
-              </div>
-            </div>
+            <p className="font-sans text-black/50 text-center py-6">
+              No additional complainants added
+            </p>
           </section>
 
-          {/* Transaction Details */}
+          {/* Section 4: Additional Opposite Party */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
               <span className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">4</span>
-                Transaction Details
+                Additional Opposite Party
               </span>
             </h3>
-            <div className={gridClass}>
-              <div className="md:col-span-2">
-                <p className={labelClass}>Product/Service Description</p>
-                <p className={valueClass}>{formData.productServiceDescription || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Date of Purchase</p>
-                <p className={valueClass}>{formatDate(formData.purchaseDate)}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Amount Paid</p>
-                <p className={`${valueClass} font-medium`}>{formatCurrency(formData.purchaseAmount)}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Mode of Payment</p>
-                <p className={valueClass}>{formData.paymentMode || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Invoice/Receipt Number</p>
-                <p className={valueClass}>{formData.invoiceNumber || 'Not provided'}</p>
-              </div>
-            </div>
+            <p className="font-sans text-black/50 text-center py-6">
+              No additional opposite parties added
+            </p>
           </section>
 
-          {/* Grievance Details */}
+          {/* Section 5: Document Upload */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
               <span className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">5</span>
-                Grievance Details
-              </span>
-            </h3>
-            <div className={gridClass}>
-              <div>
-                <p className={labelClass}>Type of Deficiency</p>
-                <p className={valueClass}>{formData.deficiencyType || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Date of Deficiency</p>
-                <p className={valueClass}>{formatDate(formData.dateOfDeficiency)}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className={labelClass}>Detailed Description of Grievance</p>
-                <p className={`${valueClass} whitespace-pre-wrap`}>{formData.grievanceDescription || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Date of Prior Complaint</p>
-                <p className={valueClass}>{formatDate(formData.priorComplaintDate)}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Response Received</p>
-                <p className={valueClass}>{formData.responseReceived || 'Not provided'}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className={labelClass}>Details of Prior Communication</p>
-                <p className={`${valueClass} whitespace-pre-wrap`}>{formData.priorComplaintDetails || 'Not provided'}</p>
-              </div>
-            </div>
-          </section>
-
-          {/* Evidence/Documents */}
-          <section className={sectionClass}>
-            <h3 className={sectionTitleClass}>
-              <span className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">6</span>
-                Uploaded Evidence
+                Document Upload
               </span>
             </h3>
             {uploadedFiles.length > 0 ? (
@@ -370,18 +379,18 @@ export const ComplaintPreview: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <p className="font-sans text-black/50 text-center py-8">
+              <p className="font-sans text-black/50 text-center py-6">
                 No documents uploaded
               </p>
             )}
           </section>
 
-          {/* Relief Sought */}
+          {/* Section 6: Final Submission & Checkout */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
               <span className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">7</span>
-                Relief Sought
+                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">6</span>
+                Final Submission & Checkout
               </span>
             </h3>
             <div className={gridClass}>
@@ -415,7 +424,7 @@ export const ComplaintPreview: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA] to-transparent pt-8 pb-6 mt-8">
+        <div className="sticky bottom-0 bg-gradient-to-t from-[#fbf7ef] via-[#fbf7ef] to-transparent pt-8 pb-6 mt-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-4xl mx-auto">
             <Button
               variant="outline"

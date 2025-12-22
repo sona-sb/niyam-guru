@@ -312,7 +312,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
         <form className="space-y-8">
           {/* Case Details Section */}
           {currentSection === 0 && (
-            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Case Details</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 Select the appropriate consumer forum and provide transaction details.
@@ -478,7 +478,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Complainant / Opposite Party Section */}
           {currentSection === 1 && (
-            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Complainant / Opposite Party</h3>
               
               {/* Complainant Details */}
@@ -644,7 +644,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Additional Complainant Section */}
           {currentSection === 2 && (
-            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Additional Complainant</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 If there are multiple complainants, add their details here. This section is optional.
@@ -697,7 +697,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Additional Opposite Party Section */}
           {currentSection === 3 && (
-            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Additional Opposite Party</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 If there are multiple opposite parties, add their details here. This section is optional.
@@ -750,7 +750,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Document Upload Section */}
           {currentSection === 4 && (
-            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Document Upload</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 Upload supporting documents such as receipts, invoices, warranty cards, photographs, or any other evidence related to your complaint.
@@ -957,7 +957,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Final Submission & Checkout Section */}
           {currentSection === 5 && (
-            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Final Submission & Checkout</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 Specify the compensation and relief you are seeking from the Consumer Forum.
