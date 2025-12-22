@@ -11,8 +11,8 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     // Handle login logic here
     console.log('Login attempt:', { email, password });
-    // Navigate to mootcourt template after login
-    navigate('/mootcourt/template');
+    // Navigate to My Cases page after login
+    navigate('/my-cases');
   };
 
   return (
