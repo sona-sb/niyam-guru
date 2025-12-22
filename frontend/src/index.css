@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", sans-serif;
+  --font-vesper: "Vesper Libre", serif;
+  --font-arima: "Arima", cursive;
+  --font-gotu: "Gotu", sans-serif;
+  --font-instrument: "Instrument Serif", serif;
+  
+  --color-quad-black: #1a1a1a;
+  --color-quad-gray: #4a4a4a;
+  
+  --animate-fade-up: fadeUp 0.8s ease-out forwards;
+}
+
+@keyframes fadeUp {
+  0% { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Base styles */
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom underline offset fix for accurate recreation */
+.underline-offset-custom {
+  text-underline-offset: 6px;
+  text-decoration-thickness: 1.5px;
+}
+
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
