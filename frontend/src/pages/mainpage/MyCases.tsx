@@ -1,7 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { NoiseOverlay } from '@/src/components/common/NoiseOverlay';
-import { Navbar } from '@/src/components/layout/Navbar';
 import { Footer } from '@/src/components/layout/Footer';
 
 // Mock data for registered cases - replace with actual data from your backend/state
@@ -108,13 +107,30 @@ export const MyCases: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20 py-8 flex flex-col min-h-screen">
-        <Navbar />
+        {/* Custom Navbar with Profile */}
+        <header className="w-full">
+          <div className="flex items-center justify-between pb-5 border-b border-black/80">
+            {/* Logo */}
+            <Link to="/" className="text-2xl tracking-wide font-semibold flex items-baseline gap-0.5">
+              <span className="font-gotu">नियम</span>
+              <span className="font-serif">-</span>
+              <span className="font-instrument italic">guru</span>
+            </Link>
+
+            {/* Profile Picture - Initial Letter */}
+            <div className="flex items-center">
+              <button className="w-10 h-10 rounded-full bg-white text-black border-2 border-black flex items-center justify-center text-lg font-semibold hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+                J
+              </button>
+            </div>
+          </div>
+        </header>
 
         <main className="flex-grow mt-8 md:mt-12">
           {/* Page Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-4xl md:text-5xl font-serif text-black mb-2">
                 My Cases
               </h1>
               <p className="text-gray-600">
