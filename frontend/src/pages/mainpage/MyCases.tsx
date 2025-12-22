@@ -92,19 +92,11 @@ export const MyCases: React.FC = () => {
   const navigate = useNavigate();
 
   const handleCaseClick = (caseId: string) => {
-<<<<<<< Updated upstream
     // Navigate to the intro page with the case ID
-=======
-    // Navigate to the document intro page with the case ID
->>>>>>> Stashed changes
     navigate(`/mootcourt/intro?caseId=${caseId}`);
   };
 
   const handleNewCase = () => {
-<<<<<<< Updated upstream
-=======
-    // Navigate to the document intro page for a new case
->>>>>>> Stashed changes
     navigate('/mootcourt/intro');
   };
 
