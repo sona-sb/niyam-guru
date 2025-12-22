@@ -172,13 +172,12 @@ export const ConsumerComplaintTemplate: React.FC = () => {
   };
 
   const sections = [
-    { title: 'Forum Details', id: 'forum' },
-    { title: 'Complainant Details', id: 'complainant' },
-    { title: 'Opposite Party Details', id: 'opposite-party' },
-    { title: 'Transaction Details', id: 'transaction' },
-    { title: 'Grievance Details', id: 'grievance' },
-    { title: 'Evidence Upload', id: 'evidence' },
-    { title: 'Relief Sought', id: 'relief' },
+    { title: 'Case Details', id: 'case-details' },
+    { title: 'Complainant / Opposite Party', id: 'complainant-opposite' },
+    { title: 'Additional Complainant', id: 'additional-complainant' },
+    { title: 'Additional Opposite Party', id: 'additional-opposite' },
+    { title: 'Document Upload', id: 'document-upload' },
+    { title: 'Final Submission & Checkout', id: 'final-submission' },
   ];
 
   const handleDrag = (e: React.DragEvent) => {
@@ -263,31 +262,60 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           </p>
         </div>
 
-        {/* Section Navigation */}
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
-          {sections.map((section, index) => (
-            <button
-              key={section.id}
-              onClick={() => setCurrentSection(index)}
-              className={`px-4 py-2 rounded-full text-sm font-sans transition-all duration-300 ${
-                currentSection === index
-                  ? 'bg-black text-white'
-                  : 'bg-black/5 text-black/70 hover:bg-black/10'
-              }`}
-            >
-              {section.title}
-            </button>
-          ))}
+        {/* Section Navigation - Stepper */}
+        <div className="mb-10">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-black/60 mb-8">
+            <span className="text-gray-500 cursor-pointer hover:underline">Dashboard</span>
+            <span>{'>'}</span>
+            <span className="font-medium text-black">File New Case</span>
+          </div>
+          
+          {/* Stepper */}
+          <div className="relative flex items-start justify-between">
+            {/* Connector Line - Single straight line behind all circles */}
+            <div className="absolute top-5 left-0 right-0 flex items-center px-[60px]">
+              <div className="w-full h-[2px] bg-gray-300 relative">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-black transition-all duration-300"
+                  style={{ width: `${(currentSection / (sections.length - 1)) * 100}%` }}
+                />
+              </div>
+            </div>
+            
+            {sections.map((section, index) => (
+              <div key={section.id} className="flex flex-col items-center relative z-10" style={{ width: `${100 / sections.length}%` }}>
+                {/* Step Circle */}
+                <button
+                  onClick={() => setCurrentSection(index)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
+                    index <= currentSection
+                      ? 'bg-black text-white'
+                      : 'bg-white border-2 border-gray-300 text-gray-500'
+                  }`}
+                >
+                  {index + 1}
+                </button>
+                
+                {/* Step Title */}
+                <span className={`mt-3 text-xs text-center max-w-[100px] leading-tight ${
+                  index === currentSection ? 'text-black font-medium' : 'text-gray-500'
+                }`}>
+                  {section.title}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Form */}
         <form className="space-y-8">
-          {/* Forum Details Section */}
+          {/* Case Details Section */}
           {currentSection === 0 && (
-            <div className="bg-white border border-black/10 rounded-2xl p-8">
-              <h3 className={sectionTitleClass}>Forum Details</h3>
+            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+              <h3 className={sectionTitleClass}>Case Details</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
-                Select the appropriate consumer forum based on the value of goods/services and compensation claimed.
+                Select the appropriate consumer forum and provide transaction details.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
@@ -333,181 +361,11 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                     required
                   />
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Complainant Details Section */}
-          {currentSection === 1 && (
-            <div className="bg-white border border-black/10 rounded-2xl p-8">
-              <h3 className={sectionTitleClass}>Complainant Details</h3>
-              <p className="font-sans text-sm text-black/60 mb-6">
-                Enter the complete details of the person filing the complaint.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className={labelClass}>Full Name *</label>
-                  <input
-                    type="text"
-                    name="complainantName"
-                    value={formData.complainantName}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="Enter your full legal name"
-                    required
-                  />
+                
+                {/* Transaction Details */}
+                <div className="md:col-span-2 mt-4 pt-6 border-t border-black/10">
+                  <h4 className="font-serif text-xl text-black mb-4">Transaction Details</h4>
                 </div>
-                <div>
-                  <label className={labelClass}>Father's/Husband's Name *</label>
-                  <input
-                    type="text"
-                    name="complainantFatherHusbandName"
-                    value={formData.complainantFatherHusbandName}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="S/o, D/o, or W/o"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Age *</label>
-                  <input
-                    type="number"
-                    name="complainantAge"
-                    value={formData.complainantAge}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="Enter age"
-                    min="18"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Occupation</label>
-                  <input
-                    type="text"
-                    name="complainantOccupation"
-                    value={formData.complainantOccupation}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="Enter occupation"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className={labelClass}>Complete Address *</label>
-                  <textarea
-                    name="complainantAddress"
-                    value={formData.complainantAddress}
-                    onChange={handleInputChange}
-                    className={`${inputClass} min-h-[100px]`}
-                    placeholder="Enter complete address with PIN code"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Phone Number *</label>
-                  <input
-                    type="tel"
-                    name="complainantPhone"
-                    value={formData.complainantPhone}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="+91 XXXXX XXXXX"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Email Address *</label>
-                  <input
-                    type="email"
-                    name="complainantEmail"
-                    value={formData.complainantEmail}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="your@email.com"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Opposite Party Details Section */}
-          {currentSection === 2 && (
-            <div className="bg-white border border-black/10 rounded-2xl p-8">
-              <h3 className={sectionTitleClass}>Opposite Party Details</h3>
-              <p className="font-sans text-sm text-black/60 mb-6">
-                Enter the complete details of the seller/service provider against whom the complaint is being filed.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className={labelClass}>Name/Company Name *</label>
-                  <input
-                    type="text"
-                    name="oppositePartyName"
-                    value={formData.oppositePartyName}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="Enter company/individual name"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Designation/Position</label>
-                  <input
-                    type="text"
-                    name="oppositePartyDesignation"
-                    value={formData.oppositePartyDesignation}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="e.g., Proprietor, Manager, Director"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className={labelClass}>Complete Address *</label>
-                  <textarea
-                    name="oppositePartyAddress"
-                    value={formData.oppositePartyAddress}
-                    onChange={handleInputChange}
-                    className={`${inputClass} min-h-[100px]`}
-                    placeholder="Enter complete registered/business address"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Phone Number</label>
-                  <input
-                    type="tel"
-                    name="oppositePartyPhone"
-                    value={formData.oppositePartyPhone}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="+91 XXXXX XXXXX"
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Email Address</label>
-                  <input
-                    type="email"
-                    name="oppositePartyEmail"
-                    value={formData.oppositePartyEmail}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="company@email.com"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Transaction Details Section */}
-          {currentSection === 3 && (
-            <div className="bg-white border border-black/10 rounded-2xl p-8">
-              <h3 className={sectionTitleClass}>Transaction Details</h3>
-              <p className="font-sans text-sm text-black/60 mb-6">
-                Provide details of the product purchased or service availed.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className={labelClass}>Product/Service Description *</label>
                   <textarea
@@ -570,18 +428,11 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                     placeholder="Enter invoice/bill number"
                   />
                 </div>
-              </div>
-            </div>
-          )}
 
-          {/* Grievance Details Section */}
-          {currentSection === 4 && (
-            <div className="bg-white border border-black/10 rounded-2xl p-8">
-              <h3 className={sectionTitleClass}>Grievance Details</h3>
-              <p className="font-sans text-sm text-black/60 mb-6">
-                Describe the nature of your complaint and the deficiency in product/service.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Grievance Details */}
+                <div className="md:col-span-2 mt-4 pt-6 border-t border-black/10">
+                  <h4 className="font-serif text-xl text-black mb-4">Grievance Details</h4>
+                </div>
                 <div>
                   <label className={labelClass}>Type of Deficiency *</label>
                   <select
@@ -617,49 +468,290 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                     value={formData.grievanceDescription}
                     onChange={handleInputChange}
                     className={`${inputClass} min-h-[150px]`}
-                    placeholder="Describe in detail what went wrong, when it happened, and how it affected you. Include all relevant facts in chronological order."
+                    placeholder="Describe in detail what went wrong, when it happened, and how it affected you."
                     required
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Date of Prior Complaint (if any)</label>
-                  <input
-                    type="date"
-                    name="priorComplaintDate"
-                    value={formData.priorComplaintDate}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Response Received</label>
-                  <input
-                    type="text"
-                    name="responseReceived"
-                    value={formData.responseReceived}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                    placeholder="Any response from opposite party"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className={labelClass}>Details of Prior Communication</label>
-                  <textarea
-                    name="priorComplaintDetails"
-                    value={formData.priorComplaintDetails}
-                    onChange={handleInputChange}
-                    className={`${inputClass} min-h-[100px]`}
-                    placeholder="Describe any previous attempts to resolve the issue directly with the seller/service provider"
                   />
                 </div>
               </div>
             </div>
           )}
 
-          {/* Evidence Upload Section */}
-          {currentSection === 5 && (
-            <div className="bg-white border border-black/10 rounded-2xl p-8">
-              <h3 className={sectionTitleClass}>Evidence Upload</h3>
+          {/* Complainant / Opposite Party Section */}
+          {currentSection === 1 && (
+            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+              <h3 className={sectionTitleClass}>Complainant / Opposite Party</h3>
+              
+              {/* Complainant Details */}
+              <div className="mb-8">
+                <h4 className="font-serif text-xl text-black mb-4">Complainant Details</h4>
+                <p className="font-sans text-sm text-black/60 mb-6">
+                  Enter the complete details of the person filing the complaint.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className={labelClass}>Full Name *</label>
+                    <input
+                      type="text"
+                      name="complainantName"
+                      value={formData.complainantName}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="Enter your full legal name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Father's/Husband's Name *</label>
+                    <input
+                      type="text"
+                      name="complainantFatherHusbandName"
+                      value={formData.complainantFatherHusbandName}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="S/o, D/o, or W/o"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Age *</label>
+                    <input
+                      type="number"
+                      name="complainantAge"
+                      value={formData.complainantAge}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="Enter age"
+                      min="18"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Occupation</label>
+                    <input
+                      type="text"
+                      name="complainantOccupation"
+                      value={formData.complainantOccupation}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="Enter occupation"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className={labelClass}>Complete Address *</label>
+                    <textarea
+                      name="complainantAddress"
+                      value={formData.complainantAddress}
+                      onChange={handleInputChange}
+                      className={`${inputClass} min-h-[100px]`}
+                      placeholder="Enter complete address with PIN code"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Phone Number *</label>
+                    <input
+                      type="tel"
+                      name="complainantPhone"
+                      value={formData.complainantPhone}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="+91 XXXXX XXXXX"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Email Address *</label>
+                    <input
+                      type="email"
+                      name="complainantEmail"
+                      value={formData.complainantEmail}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="your@email.com"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Opposite Party Details */}
+              <div className="pt-6 border-t border-black/10">
+                <h4 className="font-serif text-xl text-black mb-4">Opposite Party Details</h4>
+                <p className="font-sans text-sm text-black/60 mb-6">
+                  Enter the complete details of the seller/service provider against whom the complaint is being filed.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className={labelClass}>Name/Company Name *</label>
+                    <input
+                      type="text"
+                      name="oppositePartyName"
+                      value={formData.oppositePartyName}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="Enter company/individual name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Designation/Position</label>
+                    <input
+                      type="text"
+                      name="oppositePartyDesignation"
+                      value={formData.oppositePartyDesignation}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="e.g., Proprietor, Manager, Director"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className={labelClass}>Complete Address *</label>
+                    <textarea
+                      name="oppositePartyAddress"
+                      value={formData.oppositePartyAddress}
+                      onChange={handleInputChange}
+                      className={`${inputClass} min-h-[100px]`}
+                      placeholder="Enter complete registered/business address"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Phone Number</label>
+                    <input
+                      type="tel"
+                      name="oppositePartyPhone"
+                      value={formData.oppositePartyPhone}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="+91 XXXXX XXXXX"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Email Address</label>
+                    <input
+                      type="email"
+                      name="oppositePartyEmail"
+                      value={formData.oppositePartyEmail}
+                      onChange={handleInputChange}
+                      className={inputClass}
+                      placeholder="company@email.com"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Additional Complainant Section */}
+          {currentSection === 2 && (
+            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+              <h3 className={sectionTitleClass}>Additional Complainant</h3>
+              <p className="font-sans text-sm text-black/60 mb-6">
+                If there are multiple complainants, add their details here. This section is optional.
+              </p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 bg-black/5 rounded-full flex items-center justify-center mb-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-black/40"
+                  >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <line x1="19" x2="19" y1="8" y2="14" />
+                    <line x1="22" x2="16" y1="11" y2="11" />
+                  </svg>
+                </div>
+                <p className="font-sans text-black/60 mb-4">No additional complainants added yet</p>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white hover:bg-black/80 rounded-lg transition-all duration-300"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M8 12h8" />
+                    <path d="M12 8v8" />
+                  </svg>
+                  <span className="font-sans font-medium text-sm">Add Complainant</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Additional Opposite Party Section */}
+          {currentSection === 3 && (
+            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+              <h3 className={sectionTitleClass}>Additional Opposite Party</h3>
+              <p className="font-sans text-sm text-black/60 mb-6">
+                If there are multiple opposite parties, add their details here. This section is optional.
+              </p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 bg-black/5 rounded-full flex items-center justify-center mb-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-black/40"
+                  >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <line x1="19" x2="19" y1="8" y2="14" />
+                    <line x1="22" x2="16" y1="11" y2="11" />
+                  </svg>
+                </div>
+                <p className="font-sans text-black/60 mb-4">No additional opposite parties added yet</p>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white hover:bg-black/80 rounded-lg transition-all duration-300"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M8 12h8" />
+                    <path d="M12 8v8" />
+                  </svg>
+                  <span className="font-sans font-medium text-sm">Add Opposite Party</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Document Upload Section */}
+          {currentSection === 4 && (
+            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+              <h3 className={sectionTitleClass}>Document Upload</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 Upload supporting documents such as receipts, invoices, warranty cards, photographs, or any other evidence related to your complaint.
               </p>
@@ -863,10 +955,10 @@ export const ConsumerComplaintTemplate: React.FC = () => {
             </div>
           )}
 
-          {/* Relief Sought Section */}
-          {currentSection === 6 && (
-            <div className="bg-white border border-black/10 rounded-2xl p-8">
-              <h3 className={sectionTitleClass}>Relief Sought</h3>
+          {/* Final Submission & Checkout Section */}
+          {currentSection === 5 && (
+            <div className="bg-[#fbf7ef] border border-black/10 rounded-2xl p-8">
+              <h3 className={sectionTitleClass}>Final Submission & Checkout</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 Specify the compensation and relief you are seeking from the Consumer Forum.
               </p>

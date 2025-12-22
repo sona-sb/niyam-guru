@@ -18,7 +18,7 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="relative min-h-screen w-full flex">
       {/* Left Side - Login Form */}
-      <div className="relative w-full lg:w-1/2 min-h-screen bg-white flex items-center justify-center">
+      <div className="relative w-full lg:w-1/2 min-h-screen bg-[#fbf7ef] flex items-center justify-center">
         {/* Noise Texture Overlay */}
         <NoiseOverlay />
 
@@ -75,7 +75,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {/* Right Side - Image */}
-      <div className="hidden lg:flex w-1/2 min-h-screen p-6 items-center justify-center bg-[#FFF6E3]">
+      <div className="hidden lg:flex w-1/2 min-h-screen p-6 items-center justify-center bg-[#fbf7ef]">
         <div className="relative w-full h-full rounded-2xl overflow-hidden">
           <img
             src="/media/pexels-vuralyavas-14208025.jpg"
