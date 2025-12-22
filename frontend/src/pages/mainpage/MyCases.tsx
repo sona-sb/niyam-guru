@@ -92,12 +92,12 @@ export const MyCases: React.FC = () => {
   const navigate = useNavigate();
 
   const handleCaseClick = (caseId: string) => {
-    // Navigate to the template page with the case ID
-    navigate(`/mootcourt/template?caseId=${caseId}`);
+    // Navigate to the intro page with the case ID
+    navigate(`/mootcourt/intro?caseId=${caseId}`);
   };
 
   const handleNewCase = () => {
-    navigate('/mootcourt/template');
+    navigate('/mootcourt/intro');
   };
 
   return (
