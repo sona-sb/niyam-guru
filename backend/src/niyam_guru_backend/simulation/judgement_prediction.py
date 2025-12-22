@@ -7,6 +7,7 @@ from pathlib import Path
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import Chroma
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.prompts import PromptTemplate
 from langchain_classic.chains.retrieval_qa.base import RetrievalQA
 
@@ -16,7 +17,36 @@ from niyam_guru_backend.config import (
     LLM_MODEL,
     VECTORSTORE_DIR,
     SIMULATION_DIR,
+    DATA_DIR,
 )
+
+# Path to the Consumer Protection Act 2019 PDF
+CPA_2019_PDF_PATH = DATA_DIR / "laws" / "cpa2019.pdf"
+
+
+def load_cpa_2019_context() -> str:
+    """Load and return the Consumer Protection Act 2019 PDF content."""
+    if not CPA_2019_PDF_PATH.exists():
+        print(f"⚠️ Warning: CPA 2019 PDF not found at {CPA_2019_PDF_PATH}")
+        return ""
+    
+    try:
+        loader = PyPDFLoader(str(CPA_2019_PDF_PATH))
+        documents = loader.load()
+        
+        # Combine all pages into a single text
+        full_text = "\n\n".join([doc.page_content for doc in documents])
+        
+        # Truncate if too long (to avoid token limits) - keep first ~50,000 chars
+        max_chars = 50000
+        if len(full_text) > max_chars:
+            full_text = full_text[:max_chars] + "\n\n[... Document truncated for length ...]"
+        
+        print(f"✅ Loaded CPA 2019 ({len(documents)} pages, {len(full_text)} characters)")
+        return full_text
+    except Exception as e:
+        print(f"⚠️ Error loading CPA 2019 PDF: {e}")
+        return ""
 
 
 def get_vectorstore():
@@ -29,7 +59,7 @@ def get_vectorstore():
     return vectorstore
 
 
-def get_qa_chain(vectorstore):
+def get_qa_chain(vectorstore, cpa_context: str = ""):
     """Create and return the QA chain with JSON-formatted legal judgment prompt."""
     
     # Create a retriever from the loaded vector store
@@ -41,6 +71,23 @@ def get_qa_chain(vectorstore):
         temperature=0.3
     )
     
+    # Build the CPA 2019 reference section
+    cpa_section = ""
+    if cpa_context:
+        cpa_section = f"""
+═══════════════════════════════════════════════════════════════════════════════
+                    CONSUMER PROTECTION ACT, 2019 (REFERENCE)
+═══════════════════════════════════════════════════════════════════════════════
+
+The following is the full text of the Consumer Protection Act, 2019. Use this as your
+PRIMARY LEGAL REFERENCE for identifying applicable sections, definitions, rights,
+remedies, and procedures. Quote specific sections when relevant.
+
+{cpa_context}
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+    
     # Custom prompt template for legal judgment prediction with JSON output
     legal_judgment_prompt = PromptTemplate(
         input_variables=["context", "question"],
@@ -48,11 +95,28 @@ def get_qa_chain(vectorstore):
 Your task is to analyze the user's case, predict the likely legal outcome based on similar past cases,
 and format your response as a detailed JSON structure for a courtroom simulation.
 
-SIMILAR PAST CASES FROM DATABASE:
+''' + cpa_section + '''
+═══════════════════════════════════════════════════════════════════════════════
+                    SIMILAR PAST CASES FROM DATABASE
+═══════════════════════════════════════════════════════════════════════════════
+
 {context}
 
-USER'S CURRENT CASE:
+═══════════════════════════════════════════════════════════════════════════════
+                    USER'S CURRENT CASE
+═══════════════════════════════════════════════════════════════════════════════
+
 {question}
+
+═══════════════════════════════════════════════════════════════════════════════
+                    INSTRUCTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Carefully analyze the user's case against the Consumer Protection Act, 2019 provisions above.
+2. Identify SPECIFIC sections from CPA 2019 that are applicable (e.g., Section 2(1), Section 35, etc.)
+3. Quote the exact text of relevant sections where appropriate.
+4. Compare with similar past cases from the database.
+5. Provide a detailed judgment prediction.
 
 Analyze the case thoroughly and respond with ONLY a valid JSON object (no markdown, no code blocks, just raw JSON).
 The JSON must follow this exact structure:
@@ -231,22 +295,25 @@ def run_judgment_prediction(query: str) -> tuple[dict, Path]:
     Returns:
         Tuple of (parsed JSON response, path to saved file)
     """
-    print("--- Step 1: Loading Existing Vector Database ---")
+    print("--- Step 1: Loading Consumer Protection Act 2019 ---")
+    cpa_context = load_cpa_2019_context()
+    
+    print("\n--- Step 2: Loading Existing Vector Database ---")
     vectorstore = get_vectorstore()
     print(f"✅ Database loaded successfully from: '{VECTORSTORE_DIR}'")
     
-    print("\n--- Step 2: Setting up the LLM and Retriever ---")
-    qa_chain = get_qa_chain(vectorstore)
+    print("\n--- Step 3: Setting up the LLM and Retriever ---")
+    qa_chain = get_qa_chain(vectorstore, cpa_context)
     print("✅ LLM and retriever are ready.")
     
-    print("\n--- Step 3: Running Query ---")
+    print("\n--- Step 4: Running Query ---")
     print(f"Query: {query[:100]}..." if len(query) > 100 else f"Query: {query}")
     
     # Invoke the chain
     response = qa_chain.invoke({"query": query})
     
     # Parse the JSON response
-    print("\n--- Step 4: Parsing Response ---")
+    print("\n--- Step 5: Parsing Response ---")
     json_response = parse_llm_response(response["result"])
     
     # Add source documents metadata to the response
@@ -259,9 +326,10 @@ def run_judgment_prediction(query: str) -> tuple[dict, Path]:
     json_response["_source_documents"] = source_docs
     json_response["_query"] = query
     json_response["_timestamp"] = datetime.now().isoformat()
+    json_response["_cpa_2019_included"] = bool(cpa_context)
     
     # Save to file
-    print("\n--- Step 5: Saving Simulation Data ---")
+    print("\n--- Step 6: Saving Simulation Data ---")
     saved_path = save_simulation_json(json_response, query)
     print(f"✅ Simulation JSON saved to: {saved_path}")
     
