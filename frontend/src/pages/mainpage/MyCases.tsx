@@ -116,7 +116,7 @@ export const MyCases: React.FC = () => {
             {/* Welcome Section */}
             <div className="mb-12">
               <h1 className="text-4xl md:text-5xl font-serif text-black mb-3">
-                Welcome Back, John
+                Welcome Back, <span className="italic font-vesper">John</span>
               </h1>
               <button className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#f0ede8] text-gray-700 rounded-full text-sm font-medium hover:bg-[#e8e4dc] transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,19 +132,19 @@ export const MyCases: React.FC = () => {
               
               {/* Search and Register Row */}
               <div className="flex items-center justify-between gap-4">
-                <div className="relative flex-1 max-w-md">
+                <div className="relative flex-1 max-w-xs">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input
                     type="text"
                     placeholder="Search for a case"
-                    className="w-full pl-10 pr-4 py-2 bg-[#FFFEFA] border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-10 pr-4 py-2 bg-[#faf8f5] border border-gray-200 rounded-lg text-xs placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-colors"
                   />
                 </div>
                 <button
                   onClick={handleNewCase}
-                  className="inline-flex items-center gap-2 px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 font-medium text-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 font-medium text-xs"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -161,12 +161,12 @@ export const MyCases: React.FC = () => {
                 <div
                   key={caseItem.id}
                   onClick={() => handleCaseClick(caseItem.id)}
-                  className="group bg-[#FFFEFA] rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
+                  className="group bg-[#faf8f5] rounded-lg border border-gray-200 p-6 cursor-pointer hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Case Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-black transition-colors line-clamp-2">
+                      <h3 className="text-md font-semibold text-gray-900 group-hover:text-black transition-colors line-clamp-2">
                         {caseItem.caseName}
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
