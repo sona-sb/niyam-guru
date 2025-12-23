@@ -1,7 +1,8 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { NoiseOverlay } from '@/src/components/common/NoiseOverlay';
 import { Footer } from '@/src/components/layout/Footer';
+import { Sidebar } from '@/src/components/layout/Sidebar';
 
 // Mock data for registered cases - replace with actual data from your backend/state
 interface Case {
@@ -105,58 +106,53 @@ export const MyCases: React.FC = () => {
       {/* Noise Texture Overlay */}
       <NoiseOverlay />
 
-      {/* Main Content Container */}
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20 py-8 flex flex-col min-h-screen">
-        {/* Custom Navbar with Profile */}
-        <header className="w-full">
-          <div className="flex items-center justify-between pb-5 border-b border-black/80">
-            {/* Logo */}
-            <Link to="/" className="text-2xl tracking-wide font-semibold flex items-baseline gap-0.5">
-              <span className="font-gotu">नियम</span>
-              <span className="font-serif">-</span>
-              <span className="font-instrument italic">guru</span>
-            </Link>
+      {/* Collapsed Sidebar */}
+      <Sidebar userInitial="J" />
 
-            {/* Profile Picture - Initial Letter */}
-            <div className="flex items-center">
-              <button className="w-10 h-10 rounded-full bg-white text-black border-2 border-black flex items-center justify-center text-lg font-semibold hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
-                J
+      {/* Main Content Container - with left margin for collapsed sidebar */}
+      <div className="relative z-10 ml-16 min-h-screen flex flex-col">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-8 flex flex-col flex-grow w-full">
+          <main className="flex-grow">
+            {/* Welcome Section */}
+            <div className="mb-12">
+              <h1 className="text-4xl md:text-5xl font-serif text-black mb-3">
+                Welcome Back, John
+              </h1>
+              <button className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#f0ede8] text-gray-700 rounded-full text-sm font-medium hover:bg-[#e8e4dc] transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Check Usage
               </button>
             </div>
-          </div>
-        </header>
 
-        <main className="flex-grow mt-8 md:mt-12">
-          {/* Page Header */}
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-serif text-black mb-2">
-                My Cases
-              </h1>
-              <p className="text-gray-600">
-                View and manage your registered consumer complaints
-              </p>
+            {/* Cases Section */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-black mb-4">Cases</h2>
+              
+              {/* Search and Register Row */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="relative flex-1 max-w-md">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search for a case"
+                    className="w-full pl-10 pr-4 py-2 bg-[#FFFEFA] border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-colors"
+                  />
+                </div>
+                <button
+                  onClick={handleNewCase}
+                  className="inline-flex items-center gap-2 px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 font-medium text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Register a Case
+                </button>
+              </div>
             </div>
-            <button
-              onClick={handleNewCase}
-              className="mt-4 md:mt-0 inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 font-medium"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Register New Case
-            </button>
-          </div>
 
           {/* Cases Grid */}
           {mockCases.length > 0 ? (
@@ -165,7 +161,7 @@ export const MyCases: React.FC = () => {
                 <div
                   key={caseItem.id}
                   onClick={() => handleCaseClick(caseItem.id)}
-                  className="group bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
+                  className="group bg-[#FFFEFA] rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Case Header */}
                   <div className="flex items-start justify-between mb-4">
@@ -178,7 +174,7 @@ export const MyCases: React.FC = () => {
                       </p>
                     </div>
                     <span
-                      className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(
+                      className={`px-3 py-1 text-xs font-medium rounded-lg border ${getStatusColor(
                         caseItem.status
                       )}`}
                     >
@@ -330,9 +326,10 @@ export const MyCases: React.FC = () => {
               </button>
             </div>
           )}
-        </main>
+          </main>
 
-        <Footer />
+          <Footer />
+        </div>
       </div>
     </div>
   );

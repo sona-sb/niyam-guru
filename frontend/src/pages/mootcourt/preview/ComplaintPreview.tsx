@@ -163,7 +163,7 @@ export const ComplaintPreview: React.FC = () => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-amber-600 flex-shrink-0 mt-0.5"
+            className="text-amber-600 shrink-0 mt-0.5"
           >
             <circle cx="12" cy="12" r="10" />
             <path d="M12 16v-4" />
@@ -424,7 +424,7 @@ export const ComplaintPreview: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-[#fbf7ef] via-[#fbf7ef] to-transparent pt-8 pb-6 mt-8">
+        <div className="sticky bottom-0 bg-linear-to-t from-[#fbf7ef] via-[#fbf7ef] to-transparent pt-8 pb-6 mt-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-4xl mx-auto">
             <Button
               variant="outline"
