@@ -66,13 +66,13 @@ const mockCases: Case[] = [
 const getStatusColor = (status: Case['status']) => {
   switch (status) {
     case 'pending':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      return 'bg-yellow-100 text-yellow-800 border-yellow-100';
     case 'in-progress':
-      return 'bg-blue-100 text-blue-800 border-blue-300';
+      return 'bg-blue-100 text-blue-800 border-blue-100';
     case 'completed':
-      return 'bg-green-100 text-green-800 border-green-300';
+      return 'bg-green-100 text-green-800 border-green-100';
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-300';
+      return 'bg-gray-100 text-gray-800 border-gray-100';
   }
 };
 
@@ -91,11 +91,6 @@ const getStatusLabel = (status: Case['status']) => {
 
 export const MyCases: React.FC = () => {
   const navigate = useNavigate();
-
-  const handleCaseClick = (caseId: string) => {
-    // Navigate to the intro page with the case ID
-    navigate(`/mootcourt/intro?caseId=${caseId}`);
-  };
 
   const handleNewCase = () => {
     navigate('/mootcourt/intro');
@@ -116,7 +111,7 @@ export const MyCases: React.FC = () => {
             {/* Welcome Section */}
             <div className="mb-12">
               <h1 className="text-4xl md:text-5xl font-serif text-black mb-3">
-                Welcome Back, <span className="italic font-vesper">John</span>
+                Welcome Back, <span className="italic font-vesper">John Doe</span>
               </h1>
               <button className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#f0ede8] text-gray-700 rounded-full text-sm font-medium hover:bg-[#e8e4dc] transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,7 +123,7 @@ export const MyCases: React.FC = () => {
 
             {/* Cases Section */}
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-black mb-4">Cases</h2>
+              <h2 className="text-3xl font-bold text-black mb-4">Cases</h2>
               
               {/* Search and Register Row */}
               <div className="flex items-center justify-between gap-4">
@@ -139,7 +134,7 @@ export const MyCases: React.FC = () => {
                   <input
                     type="text"
                     placeholder="Search for a case"
-                    className="w-full pl-10 pr-4 py-2 bg-[#faf8f5] border border-gray-200 rounded-lg text-xs placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-10 pr-4 py-2 bg-[#FAF3E8] rounded-lg text-xs placeholder-gray-400 focus:outline-none transition-colors"
                   />
                 </div>
                 <button
@@ -160,8 +155,7 @@ export const MyCases: React.FC = () => {
               {mockCases.map((caseItem) => (
                 <div
                   key={caseItem.id}
-                  onClick={() => handleCaseClick(caseItem.id)}
-                  className="group bg-[#faf8f5] rounded-lg border border-gray-200 p-6 cursor-pointer hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
+                  className="group bg-[#FAF3E8] rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Case Header */}
                   <div className="flex items-start justify-between mb-4">

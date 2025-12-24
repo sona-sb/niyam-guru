@@ -6,6 +6,9 @@ export const DocumentIntro: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const [showWhiteOverlay, setShowWhiteOverlay] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
+  const [typedText, setTypedText] = useState('');
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
   
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -16,6 +19,33 @@ export const DocumentIntro: React.FC = () => {
   const frontMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const raycasterRef = useRef(new THREE.Raycaster());
   const mouseVecRef = useRef(new THREE.Vector2());
+
+  const introText = `In India, consumer justice does not begin in a courtroom.
+
+It begins with a document.
+
+When a consumer faces unfair treatment — a defective product, a denied service, or an unjust refusal — the law provides a structured path to seek redress.
+
+This process is governed by the Consumer Protection Act, 2019, and handled by Consumer Disputes Redressal Commissions.
+
+Unlike criminal courts or televised trials, consumer courts rely primarily on written complaints, affidavits, and documentary evidence.
+
+There is little argument, little drama — and a great deal of careful reasoning.
+
+This moot court simulates that exact process.
+
+You will begin by filing a formal complaint, just as a real consumer would.
+You will submit evidence to support your claim.
+The court will examine the record, raise clarifying questions if required, and apply the law to the facts.
+
+Based on this process, a reasoned judgment will be delivered.
+
+This simulation does not replace a real court.
+It does not promise outcomes.
+
+Its purpose is to show you how consumer justice actually works — from filing to resolution.
+
+When you are ready, file your complaint.`;
   
   const stateRef = useRef({
     mouse: { x: 0, y: 0 },
@@ -42,7 +72,7 @@ export const DocumentIntro: React.FC = () => {
     const ctx = canvas.getContext('2d')!;
     
     // Paper background with subtle grain
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#f0ede8';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Add subtle paper texture/noise
@@ -189,11 +219,30 @@ export const DocumentIntro: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!showIntro) return;
+
+    let index = 0;
+    const speed = 35; // ms per character
+
+    const timer = setInterval(() => {
+      setTypedText(introText.slice(0, index + 1));
+      index += 1;
+      if (index >= introText.length) {
+        clearInterval(timer);
+        setIsTypingComplete(true);
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [introText, showIntro]);
+
+  useEffect(() => {
+    if (showIntro) return;
     if (!containerRef.current) return;
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xfbf7ef);
+    scene.background = new THREE.Color(0xfaf3e8);
     sceneRef.current = scene;
     
     const camera = new THREE.PerspectiveCamera(
@@ -214,7 +263,7 @@ export const DocumentIntro: React.FC = () => {
     rendererRef.current = renderer;
     
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
     scene.add(ambientLight);
     
     const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -244,7 +293,7 @@ export const DocumentIntro: React.FC = () => {
       roughness: 0.2,
       metalness: 0.0,
       emissive: new THREE.Color(0xffffff),
-      emissiveIntensity: 0.4
+      emissiveIntensity: 0.08
     });
     frontMaterialRef.current = frontMaterial;
     
@@ -466,7 +515,97 @@ export const DocumentIntro: React.FC = () => {
       renderer.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [navigate, showIntro]);
+
+  if (showIntro) {
+    return (
+      <div
+        style={{
+          width: '100vw',
+          height: '100vh',
+          background: '#fbf7ef',
+          color: '#1f1f1f',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '48px 24px',
+          boxSizing: 'border-box',
+          overflowY: 'auto'
+        }}
+      >
+        <div style={{ maxWidth: 900, width: '100%', paddingBottom: '80px', marginTop: 'auto', marginBottom: 'auto' }}>
+          <div
+            style={{
+              whiteSpace: 'pre-wrap',
+              fontSize: '19px',
+              lineHeight: 1.75,
+              fontFamily: 'Georgia, serif',
+              color: '#2c2c2c',
+              letterSpacing: '0.01em'
+            }}
+          >
+            {typedText}
+            <span 
+              style={{
+                display: 'inline-block',
+                width: '3px',
+                height: '22px',
+                backgroundColor: '#2c2c2c',
+                marginLeft: '2px',
+                animation: 'blink 1s step-end infinite',
+                verticalAlign: 'middle',
+                opacity: isTypingComplete ? 0 : 1,
+                transition: 'opacity 0.3s ease'
+              }}
+            />
+          </div>
+          {isTypingComplete && (
+            <div 
+              style={{ 
+                marginTop: 56,
+                display: 'flex', 
+                justifyContent: 'center'
+              }}
+            >
+              <span
+                onClick={() => setShowIntro(false)}
+                style={{
+                  fontSize: '16px',
+                  fontFamily: 'Georgia, serif',
+                  color: '#5a5a5a',
+                  cursor: 'pointer',
+                  letterSpacing: '0.8px',
+                  textDecoration: 'underline',
+                  textDecorationThickness: '1px',
+                  textUnderlineOffset: '4px',
+                  transition: 'color 0.2s ease',
+                  animation: 'fadeIn 0.8s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#2c2c2c';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#5a5a5a';
+                }}
+              >
+                Click to continue
+              </span>
+            </div>
+          )}
+        </div>
+        <style>{`
+          @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -478,7 +617,7 @@ export const DocumentIntro: React.FC = () => {
           margin: 0, 
           padding: 0, 
           overflow: 'hidden',
-          background: '#b5b0a8'
+          background: '#fbf7ef'
         }} 
       />
       {/* White overlay for smooth transition */}
