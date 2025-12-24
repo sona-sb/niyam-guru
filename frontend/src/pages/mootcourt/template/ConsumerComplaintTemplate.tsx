@@ -238,26 +238,21 @@ export const ConsumerComplaintTemplate: React.FC = () => {
   };
 
   const inputClass =
-    'w-full px-4 py-2.5 bg-white border border-black/20 rounded-lg font-sans text-[15px] text-black placeholder-black/40 focus:outline-none focus:border-black transition-all duration-300';
-  const labelClass = 'block font-sans text-sm font-medium text-black mb-2';
-  const sectionTitleClass = 'font-serif text-2xl md:text-3xl text-black mb-6';
+    'w-full px-4 py-2.5 bg-white border border-[#EBEBEB] rounded-xl font-sans text-[15px] text-black/60 placeholder-black/40 focus:outline-none focus:border-black/50 transition-all duration-300';
+  const labelClass = 'block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2';
+  const sectionTitleClass = 'font-semibold text-2xl md:text-2xl text-black mb-6';
 
   return (
-    <div className="relative min-h-screen w-full bg-white">
+    <div className="relative min-h-screen w-full bg-[#fbf7ef]">
       <NoiseOverlay />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-12">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl tracking-wide font-semibold flex items-baseline justify-center gap-0.5 mb-4">
-            <span className="font-gotu">नियम</span>
-            <span className="font-serif">-</span>
-            <span className="font-instrument italic">guru</span>
-          </h1>
-          <h2 className="font-serif text-2xl md:text-3xl text-black/80">
-            Consumer Complaint Filing Form
+        <div className="text-left mb-12">
+          <h2 className="font-serif text-4xl md:text-5xl text-black">
+            Consumer Complaint <span className="italic font-vesper">Filing Form</span>
           </h2>
-          <p className="font-sans text-sm text-black/60 mt-2">
+          <p className="font-medium text-sm text-black/80 mt-2">
             As per the Consumer Protection Act, 2019
           </p>
         </div>
@@ -274,7 +269,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           {/* Stepper */}
           <div className="relative flex items-start justify-between">
             {/* Connector Line - Single straight line behind all circles */}
-            <div className="absolute top-5 left-0 right-0 flex items-center px-[60px]">
+            <div className="absolute top-5 left-0 right-0 flex items-center px-10">
               <div className="w-full h-[2px] bg-gray-300 relative">
                 <div 
                   className="absolute top-0 left-0 h-full bg-black transition-all duration-300"
@@ -284,7 +279,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
             </div>
             
             {sections.map((section, index) => (
-              <div key={section.id} className="flex flex-col items-center relative z-10" style={{ width: `${100 / sections.length}%` }}>
+              <div key={section.id} className="flex flex-col items-center relative z-10 w-20">
                 {/* Step Circle */}
                 <button
                   onClick={() => setCurrentSection(index)}
@@ -312,11 +307,8 @@ export const ConsumerComplaintTemplate: React.FC = () => {
         <form className="space-y-8">
           {/* Case Details Section */}
           {currentSection === 0 && (
-            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Case Details</h3>
-              <p className="font-sans text-sm text-black/60 mb-6">
-                Select the appropriate consumer forum and provide transaction details.
-              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className={labelClass}>Consumer Forum Type *</label>
@@ -364,7 +356,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                 
                 {/* Transaction Details */}
                 <div className="md:col-span-2 mt-4 pt-6 border-t border-black/10">
-                  <h4 className="font-serif text-xl text-black mb-4">Transaction Details</h4>
+                  <h4 className="font-semibold text-xl text-black mb-4">Transaction Details</h4>
                 </div>
                 <div className="md:col-span-2">
                   <label className={labelClass}>Product/Service Description *</label>
@@ -431,7 +423,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
                 {/* Grievance Details */}
                 <div className="md:col-span-2 mt-4 pt-6 border-t border-black/10">
-                  <h4 className="font-serif text-xl text-black mb-4">Grievance Details</h4>
+                  <h4 className="font-semibold text-xl text-black mb-4">Grievance Details</h4>
                 </div>
                 <div>
                   <label className={labelClass}>Type of Deficiency *</label>
@@ -478,15 +470,12 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Complainant / Opposite Party Section */}
           {currentSection === 1 && (
-            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Complainant / Opposite Party</h3>
               
               {/* Complainant Details */}
               <div className="mb-8">
-                <h4 className="font-serif text-xl text-black mb-4">Complainant Details</h4>
-                <p className="font-sans text-sm text-black/60 mb-6">
-                  Enter the complete details of the person filing the complaint.
-                </p>
+                <h4 className="font-semibold text-xl text-black mb-4">Complainant Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelClass}>Full Name *</label>
@@ -576,10 +565,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
               {/* Opposite Party Details */}
               <div className="pt-6 border-t border-black/10">
-                <h4 className="font-serif text-xl text-black mb-4">Opposite Party Details</h4>
-                <p className="font-sans text-sm text-black/60 mb-6">
-                  Enter the complete details of the seller/service provider against whom the complaint is being filed.
-                </p>
+                <h4 className="font-semibold text-xl text-black mb-4">Opposite Party Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelClass}>Name/Company Name *</label>
@@ -644,7 +630,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Additional Complainant Section */}
           {currentSection === 2 && (
-            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Additional Complainant</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 If there are multiple complainants, add their details here. This section is optional.
@@ -697,7 +683,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Additional Opposite Party Section */}
           {currentSection === 3 && (
-            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Additional Opposite Party</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 If there are multiple opposite parties, add their details here. This section is optional.
@@ -750,7 +736,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Document Upload Section */}
           {currentSection === 4 && (
-            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Document Upload</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 Upload supporting documents such as receipts, invoices, warranty cards, photographs, or any other evidence related to your complaint.
@@ -925,7 +911,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
               )}
 
               {/* Evidence Tips */}
-              <div className="mt-8 p-6 bg-amber-50 border border-amber-200 rounded-xl">
+              <div className="mt-8 p-6 bg-amber-100 border border-amber-100 rounded-xl">
                 <h4 className="font-sans font-semibold text-amber-800 mb-3 flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -957,7 +943,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Final Submission & Checkout Section */}
           {currentSection === 5 && (
-            <div className="bg-[#F0ECEB] border border-black/10 rounded-2xl p-8">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8">
               <h3 className={sectionTitleClass}>Final Submission & Checkout</h3>
               <p className="font-sans text-sm text-black/60 mb-6">
                 Specify the compensation and relief you are seeking from the Consumer Forum.
