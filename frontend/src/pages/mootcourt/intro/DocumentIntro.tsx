@@ -4,11 +4,14 @@ import * as THREE from 'three';
 
 export const DocumentIntro: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const textContainerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const [showWhiteOverlay, setShowWhiteOverlay] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [typedText, setTypedText] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingCompleteRef = useRef(false);
   
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -224,17 +227,63 @@ When you are ready, file your complaint.`;
     let index = 0;
     const speed = 35; // ms per character
 
-    const timer = setInterval(() => {
+    typingTimerRef.current = setInterval(() => {
       setTypedText(introText.slice(0, index + 1));
       index += 1;
       if (index >= introText.length) {
-        clearInterval(timer);
+        if (typingTimerRef.current) {
+          clearInterval(typingTimerRef.current);
+        }
+        isTypingCompleteRef.current = true;
         setIsTypingComplete(true);
       }
     }, speed);
 
-    return () => clearInterval(timer);
+    // Handle keypress to skip typing animation
+    const handleKeyPress = () => {
+      if (!isTypingCompleteRef.current) {
+        if (typingTimerRef.current) {
+          clearInterval(typingTimerRef.current);
+        }
+        setTypedText(introText);
+        isTypingCompleteRef.current = true;
+        setIsTypingComplete(true);
+      }
+    };
+
+    // Handle click to skip typing animation
+    const handleClick = () => {
+      if (!isTypingCompleteRef.current) {
+        if (typingTimerRef.current) {
+          clearInterval(typingTimerRef.current);
+        }
+        setTypedText(introText);
+        isTypingCompleteRef.current = true;
+        setIsTypingComplete(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    window.addEventListener('click', handleClick);
+
+    return () => {
+      if (typingTimerRef.current) {
+        clearInterval(typingTimerRef.current);
+      }
+      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener('click', handleClick);
+    };
   }, [introText, showIntro]);
+
+  // Auto-scroll effect as text is typed
+  useEffect(() => {
+    if (textContainerRef.current && showIntro) {
+      textContainerRef.current.scrollTo({
+        top: textContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [typedText, showIntro]);
 
   useEffect(() => {
     if (showIntro) return;
@@ -520,6 +569,7 @@ When you are ready, file your complaint.`;
   if (showIntro) {
     return (
       <div
+        ref={textContainerRef}
         style={{
           width: '100vw',
           height: '100vh',
@@ -533,6 +583,24 @@ When you are ready, file your complaint.`;
           overflowY: 'auto'
         }}
       >
+        {/* Skip hint */}
+        {!isTypingComplete && (
+          <div
+            style={{
+              position: 'fixed',
+              bottom: '24px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontSize: '13px',
+              fontFamily: 'Georgia, serif',
+              color: '#9a9a9a',
+              letterSpacing: '0.5px',
+              animation: 'fadeIn 1s ease 2s both'
+            }}
+          >
+            Press any key or click to skip
+          </div>
+        )}
         <div style={{ maxWidth: 900, width: '100%', paddingBottom: '80px', marginTop: 'auto', marginBottom: 'auto' }}>
           <div
             style={{
@@ -568,7 +636,10 @@ When you are ready, file your complaint.`;
               }}
             >
               <span
-                onClick={() => setShowIntro(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowIntro(false);
+                }}
                 style={{
                   fontSize: '16px',
                   fontFamily: 'Georgia, serif',
