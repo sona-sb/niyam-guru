@@ -56,9 +56,6 @@ interface ComplaintFormData {
   // Relief Sought
   reliefSought: string;
 
-  // Declaration
-  declarationAccepted: boolean;
-
   // Supporting Documents
   documentsAttached: string;
 }
@@ -136,8 +133,8 @@ export const ComplaintPreview: React.FC = () => {
     return '📎';
   };
 
-  const sectionClass = 'bg-[#fbf7ef] border border-black/10 rounded-2xl p-6 md:p-8 mb-6';
-  const sectionTitleClass = 'font-serif text-xl md:text-2xl text-black mb-6 pb-4 border-b border-black/10';
+  const sectionClass = 'bg-[#FAF3E8] border border-[#EBEBEB] rounded-2xl p-6 md:p-8 mb-6';
+  const sectionTitleClass = 'font-semibold text-2xl md:text-2xl text-black mb-6 pb-4 border-b border-black/10';
   const labelClass = 'font-sans text-sm text-black/50 mb-1';
   const valueClass = 'font-sans text-base text-black';
   const gridClass = 'grid grid-cols-1 md:grid-cols-2 gap-6';
@@ -162,22 +159,14 @@ export const ComplaintPreview: React.FC = () => {
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
         {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl tracking-wide font-semibold flex items-baseline justify-center gap-0.5 mb-4">
-            <span className="font-gotu">नियम</span>
-            <span className="font-serif">-</span>
-            <span className="font-instrument italic">guru</span>
-          </h1>
-          <h2 className="font-serif text-2xl md:text-3xl text-black/80">
-            Complaint Preview
+        <div className="text-left mb-6">
+          <h2 className="font-serif text-4xl md:text-5xl text-black">
+            Complaint <span className="italic font-vesper">Preview</span>
           </h2>
-          <p className="font-sans text-sm text-black/60 mt-2">
-            Please review all details before final submission
-          </p>
         </div>
 
         {/* Alert Banner */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 flex items-start gap-3">
+        <div className="bg-amber-100 border border-amber-100 rounded-xl p-4 mb-8 flex items-start gap-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -204,10 +193,7 @@ export const ComplaintPreview: React.FC = () => {
           {/* Section 1: Case Details */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
-              <span className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">1</span>
-                Case Details
-              </span>
+              Case Details
             </h3>
             
             {/* Consideration Details */}
@@ -226,7 +212,7 @@ export const ComplaintPreview: React.FC = () => {
 
             {/* Cause of Action Details */}
             <div className="mb-6 pt-6 border-t border-black/10">
-              <h4 className="font-serif text-lg text-black mb-4">Cause of Action</h4>
+              <h4 className="font-medium text-lg text-black mb-4">Cause of Action</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <p className={labelClass}>Date of Cause of Action</p>
@@ -245,7 +231,7 @@ export const ComplaintPreview: React.FC = () => {
 
             {/* Case Category */}
             <div className="pt-6 border-t border-black/10">
-              <h4 className="font-serif text-lg text-black mb-4">Case Category</h4>
+              <h4 className="font-medium text-lg text-black mb-4">Case Category</h4>
               <div className={gridClass}>
                 <div>
                   <p className={labelClass}>Case Category</p>
@@ -262,15 +248,12 @@ export const ComplaintPreview: React.FC = () => {
           {/* Section 2: Complainant / Opposite Party */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
-              <span className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">2</span>
-                Complainant / Opposite Party
-              </span>
+              Complainant / Opposite Party
             </h3>
             
             {/* Complainant Details */}
             <div className="mb-6">
-              <h4 className="font-serif text-lg text-black mb-4">Complainant Details</h4>
+              <h4 className="font-medium text-lg text-black mb-4">Complainant Details</h4>
               <div className={gridClass}>
                 <div>
                   <p className={labelClass}>Full Name</p>
@@ -305,7 +288,7 @@ export const ComplaintPreview: React.FC = () => {
 
             {/* Opposite Party Details */}
             <div className="pt-6 border-t border-black/10">
-              <h4 className="font-serif text-lg text-black mb-4">Opposite Party Details</h4>
+              <h4 className="font-medium text-lg text-black mb-4">Opposite Party Details</h4>
               <div className={gridClass}>
                 <div>
                   <p className={labelClass}>Name/Company Name</p>
@@ -334,10 +317,7 @@ export const ComplaintPreview: React.FC = () => {
           {/* Section 3: Additional Complainant */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
-              <span className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">3</span>
-                Additional Complainant
-              </span>
+              Additional Complainant
             </h3>
             <p className="font-sans text-black/50 text-center py-6">
               No additional complainants added
@@ -347,10 +327,7 @@ export const ComplaintPreview: React.FC = () => {
           {/* Section 4: Additional Opposite Party */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
-              <span className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">4</span>
-                Additional Opposite Party
-              </span>
+              Additional Opposite Party
             </h3>
             <p className="font-sans text-black/50 text-center py-6">
               No additional opposite parties added
@@ -360,10 +337,7 @@ export const ComplaintPreview: React.FC = () => {
           {/* Section 5: Document Upload */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
-              <span className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">5</span>
-                Document Upload
-              </span>
+              Document Upload
             </h3>
             {uploadedFiles.length > 0 ? (
               <div className="space-y-3">
@@ -392,10 +366,7 @@ export const ComplaintPreview: React.FC = () => {
           {/* Section 6: Final Submission & Checkout */}
           <section className={sectionClass}>
             <h3 className={sectionTitleClass}>
-              <span className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-sans">6</span>
-                Final Submission & Checkout
-              </span>
+              Final Submission & Checkout
             </h3>
             <div>
               <p className={labelClass}>Primary Relief Sought</p>
@@ -403,89 +374,56 @@ export const ComplaintPreview: React.FC = () => {
             </div>
           </section>
 
-          {/* Declaration */}
-          <section className="bg-black/5 border border-black/10 rounded-2xl p-6 md:p-8">
-            <div className="flex items-start gap-3">
-              <div className={`w-5 h-5 mt-0.5 rounded flex items-center justify-center shrink-0 ${
-                formData.declarationAccepted 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-gray-200 text-gray-400'
-              }`}>
-                {formData.declarationAccepted ? (
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                )}
-              </div>
-              <div>
-                <h3 className="font-sans font-semibold text-black mb-2">Declaration</h3>
-                <p className="font-sans text-sm text-black/70 leading-relaxed">
-                  I hereby declare that the information furnished above is true and correct to the best of my knowledge and belief. 
-                  I also declare that I have not filed any complaint regarding the same cause of action before any other Consumer Forum/Commission.
-                </p>
-                <p className={`mt-3 text-sm font-medium ${
-                  formData.declarationAccepted ? 'text-green-600' : 'text-red-500'
-                }`}>
-                  {formData.declarationAccepted ? '✓ Declaration accepted' : '✗ Declaration not accepted'}
-                </p>
-              </div>
-            </div>
-          </section>
+
         </div>
 
         {/* Action Buttons */}
-        <div className="sticky bottom-0 bg-linear-to-t from-[#fbf7ef] via-[#fbf7ef] to-transparent pt-8 pb-6 mt-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-4xl mx-auto">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={handleEdit}
-              className="w-full sm:w-auto flex items-center justify-center gap-2"
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-4xl mx-auto pt-8 pb-6">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleEdit}
+            className="w-full sm:w-auto flex items-center justify-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
-              Edit Details
-            </Button>
-            
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={handleSubmit}
-              className="w-full sm:w-auto flex items-center justify-center gap-2"
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              <path d="m15 5 4 4" />
+            </svg>
+            Edit Details
+          </Button>
+          
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleSubmit}
+            className="w-full sm:w-auto flex items-center justify-center gap-2"
+          >
+            Submit Complaint
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              Submit Complaint
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
-            </Button>
-          </div>
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </Button>
         </div>
 
         {/* Footer */}

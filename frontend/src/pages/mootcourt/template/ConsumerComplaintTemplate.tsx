@@ -56,9 +56,6 @@ interface ComplaintFormData {
   // Relief Sought
   reliefSought: string;
 
-  // Declaration
-  declarationAccepted: boolean;
-
   // Supporting Documents
   documentsAttached: string;
 }
@@ -100,7 +97,6 @@ const initialFormData: ComplaintFormData = {
   priorComplaintDetails: '',
   responseReceived: '',
   reliefSought: '',
-  declarationAccepted: false,
   documentsAttached: '',
 };
 
@@ -405,7 +401,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
   };
 
   const inputClass =
-    'w-full px-4 py-2.5 bg-white/90 border border-[#EBEBEB] rounded-xl font-sans text-[15px] text-black/60 placeholder-black/40 focus:outline-none focus:border-black/50 transition-all duration-300';
+    'w-full px-4 py-2.5 bg-[#FAF3E8] border-2 border-black/20 rounded-xl font-sans text-[15px] text-black/60 placeholder-black/40 focus:outline-none focus:border-black/50 transition-all duration-300';
   const labelClass = 'block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2';
   const sectionTitleClass = 'font-semibold text-2xl md:text-2xl text-black mb-6';
 
@@ -642,7 +638,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           {/* Complainant / Opposite Party Section */}
           {currentSection === 1 && (
             <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
-              <h3 className="font-semibold text-xl text-gray-900 mb-6">Complainant / Opposite Party</h3>
+              <h3 className="font-semibold text-2xl text-gray-900 mb-6">Complainant / Opposite Party</h3>
               
               {/* Complainant Details */}
               <div className="mb-8">
@@ -802,7 +798,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           {/* Additional Complainant Section */}
           {currentSection === 2 && (
             <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">Additional Complainant</h3>
+              <h3 className="font-semibold text-2xl text-gray-900 mb-2">Additional Complainant</h3>
               <p className="text-sm text-gray-500 mb-6">
                 If there are multiple complainants, add their details here. This section is optional.
               </p>
@@ -855,7 +851,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           {/* Additional Opposite Party Section */}
           {currentSection === 3 && (
             <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">Additional Opposite Party</h3>
+              <h3 className="font-semibold text-2xl text-gray-900 mb-2">Additional Opposite Party</h3>
               <p className="text-sm text-gray-500 mb-6">
                 If there are multiple opposite parties, add their details here. This section is optional.
               </p>
@@ -908,7 +904,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           {/* Document Upload Section */}
           {currentSection === 4 && (
             <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">Document Upload</h3>
+              <h3 className="font-semibold text-2xl text-gray-900 mb-2">Document Upload</h3>
               <p className="text-sm text-gray-500 mb-8">
                 Upload the following mandatory documents to proceed with your complaint filing.
               </p>
@@ -1246,7 +1242,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           {/* Final Submission & Checkout Section */}
           {currentSection === 5 && (
             <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">Final Submission & Checkout</h3>
+              <h3 className="font-semibold text-2xl text-gray-900 mb-2">Final Submission & Checkout</h3>
               <p className="text-sm text-gray-500 mb-6">
                 Specify the relief you are seeking from the Consumer Forum.
               </p>
@@ -1264,25 +1260,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                 </div>
               </div>
 
-              {/* Declaration */}
-              <div className="mt-8 p-6 bg-black/5 rounded-xl">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="declarationAccepted"
-                    checked={formData.declarationAccepted}
-                    onChange={(e) => setFormData(prev => ({ ...prev, declarationAccepted: e.target.checked }))}
-                    className="mt-1 w-5 h-5 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
-                  />
-                  <div>
-                    <h4 className="font-sans font-semibold text-black mb-2">Declaration</h4>
-                    <p className="font-sans text-sm text-black/70 leading-relaxed">
-                      I hereby declare that the information furnished above is true and correct to the best of my knowledge and belief. 
-                      I also declare that I have not filed any complaint regarding the same cause of action before any other Consumer Forum/Commission.
-                    </p>
-                  </div>
-                </label>
-              </div>
+
             </div>
           )}
 
