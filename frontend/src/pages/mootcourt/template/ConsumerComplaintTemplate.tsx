@@ -475,64 +475,48 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           {/* Case Details Section */}
           {currentSection === 0 && (
             <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
-              <h3 className="font-semibold text-xl text-gray-900 mb-8">Case Details</h3>
+              <h3 className={sectionTitleClass}>Case Details</h3>
               
               {/* Row 1: Paid as consideration & Claim Consideration */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Paid as consideration */}
-                <div className="relative">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="paidAsConsideration"
-                      value={formData.paidAsConsideration}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9]/g, '');
-                        setFormData(prev => ({ ...prev, paidAsConsideration: value }));
-                      }}
-                      className="peer w-full px-4 py-4 bg-white border border-gray-300 rounded text-gray-900 placeholder-transparent focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      placeholder="Enter amount"
-                      required
-                    />
-                    <label className="absolute left-3 -top-2.5 bg-white px-1 text-xs text-gray-500 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-500">
-                      Paid as consideration*
-                    </label>
-                  </div>
-                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-1.5">
-                    <span className="inline-flex items-center justify-center w-4 h-4 bg-blue-100 text-blue-600 rounded-full text-[10px] font-bold">i</span>
-                    Enter number value that you've paid for service
-                  </p>
+                <div>
+                  <label className={labelClass}>Paid as Consideration *</label>
+                  <input
+                    type="text"
+                    name="paidAsConsideration"
+                    value={formData.paidAsConsideration}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      setFormData(prev => ({ ...prev, paidAsConsideration: value }));
+                    }}
+                    className={inputClass}
+                    placeholder="Enter amount paid for service"
+                    required
+                  />
                   {formData.paidAsConsideration && (
-                    <p className="text-xs text-green-600 font-medium mt-1">
+                    <p className="text-xs text-green-600 font-medium mt-1.5">
                       {numberToIndianWords(parseInt(formData.paidAsConsideration))}
                     </p>
                   )}
                 </div>
 
                 {/* Claim Consideration */}
-                <div className="relative">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="claimConsideration"
-                      value={formData.claimConsideration}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9]/g, '');
-                        setFormData(prev => ({ ...prev, claimConsideration: value }));
-                      }}
-                      className="peer w-full px-4 py-4 bg-white border border-gray-300 rounded text-gray-900 placeholder-transparent focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      placeholder="Enter claim amount"
-                    />
-                    <label className="absolute left-3 -top-2.5 bg-white px-1 text-xs text-gray-500 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-500">
-                      Claim Consideration
-                    </label>
-                  </div>
-                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-1.5">
-                    <span className="inline-flex items-center justify-center w-4 h-4 bg-blue-100 text-blue-600 rounded-full text-[10px] font-bold">i</span>
-                    Define your exact claim amount in numbers
-                  </p>
+                <div>
+                  <label className={labelClass}>Claim Consideration</label>
+                  <input
+                    type="text"
+                    name="claimConsideration"
+                    value={formData.claimConsideration}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      setFormData(prev => ({ ...prev, claimConsideration: value }));
+                    }}
+                    className={inputClass}
+                    placeholder="Enter your claim amount"
+                  />
                   {formData.claimConsideration && (
-                    <p className="text-xs text-green-600 font-medium mt-1">
+                    <p className="text-xs text-green-600 font-medium mt-1.5">
                       {numberToIndianWords(parseInt(formData.claimConsideration))}
                     </p>
                   )}
@@ -542,72 +526,63 @@ export const ConsumerComplaintTemplate: React.FC = () => {
               {/* Row 2: Date, State, District - 3 columns */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 {/* Date of Cause of Action */}
-                <div className="relative">
-                  <div className="relative">
-                    <input
-                      type="date"
-                      name="dateOfCauseOfAction"
-                      value={formData.dateOfCauseOfAction}
-                      onChange={handleInputChange}
-                      className="peer w-full px-4 py-4 bg-white border border-gray-300 rounded text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    />
-                    <label className="absolute left-3 -top-2.5 bg-white px-1 text-xs text-gray-500">
-                      Date of Cause of Action
-                    </label>
-                  </div>
+                <div>
+                  <label className={labelClass}>Date of Cause of Action</label>
+                  <input
+                    type="date"
+                    name="dateOfCauseOfAction"
+                    value={formData.dateOfCauseOfAction}
+                    onChange={handleInputChange}
+                    className={inputClass}
+                  />
                 </div>
 
                 {/* State of Cause of Action */}
-                <div className="relative">
+                <div>
+                  <label className={labelClass}>State of Cause of Action *</label>
                   <div className="relative">
                     <select
                       name="stateOfCauseOfAction"
                       value={formData.stateOfCauseOfAction}
                       onChange={handleInputChange}
-                      className="peer w-full px-4 py-4 bg-white border border-gray-300 rounded text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer"
+                      className={`${inputClass} appearance-none cursor-pointer`}
                       required
                     >
-                      <option value="">State of Cause of Action*</option>
+                      <option value="">Select State</option>
                       {indianStates.map((state) => (
                         <option key={state} value={state}>
                           {state}
                         </option>
                       ))}
                     </select>
-                    <label className="absolute left-3 -top-2.5 bg-white px-1 text-xs text-gray-500">
-                      State of Cause of Action*
-                    </label>
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
                   </div>
                 </div>
 
-                {/* District of Cause of Action - Text Input */}
-                <div className="relative">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="districtOfCauseOfAction"
-                      value={formData.districtOfCauseOfAction}
-                      onChange={handleInputChange}
-                      className="peer w-full px-4 py-4 bg-white border border-gray-300 rounded text-gray-900 placeholder-transparent focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      placeholder="District of Cause of Action*"
-                      required
-                    />
-                    <label className="absolute left-3 -top-2.5 bg-white px-1 text-xs text-gray-500 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-500">
-                      District of Cause of Action*
-                    </label>
-                  </div>
+                {/* District of Cause of Action */}
+                <div>
+                  <label className={labelClass}>District of Cause of Action *</label>
+                  <input
+                    type="text"
+                    name="districtOfCauseOfAction"
+                    value={formData.districtOfCauseOfAction}
+                    onChange={handleInputChange}
+                    className={inputClass}
+                    placeholder="Enter district name"
+                    required
+                  />
                 </div>
               </div>
 
               {/* Row 3: Case Category & Sub Category */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Case Category */}
-                <div className="relative">
+                <div>
+                  <label className={labelClass}>Case Category *</label>
                   <div className="relative">
                     <select
                       name="caseCategory"
@@ -616,38 +591,18 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                         const value = e.target.value;
                         setFormData(prev => ({ ...prev, caseCategory: value, subCategory: '' }));
                       }}
-                      className={`peer w-full px-4 py-4 bg-white border rounded text-gray-900 focus:outline-none appearance-none cursor-pointer ${
-                        formData.caseCategory 
-                          ? 'border-green-500 focus:border-green-500 focus:ring-1 focus:ring-green-500' 
-                          : 'border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
-                      }`}
+                      className={`${inputClass} appearance-none cursor-pointer`}
                       required
                     >
-                      <option value="">Case Category*</option>
+                      <option value="">Select Category</option>
                       {caseCategories.map((category) => (
                         <option key={category} value={category}>
                           {category}
                         </option>
                       ))}
                     </select>
-                    <label className={`absolute left-3 -top-2.5 bg-white px-1 text-xs ${
-                      formData.caseCategory ? 'text-green-600' : 'text-gray-500'
-                    }`}>
-                      Case Category*
-                    </label>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      {formData.caseCategory && (
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, caseCategory: '', subCategory: '' }))}
-                          className="text-gray-400 hover:text-gray-600 p-1"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
-                      <svg className="w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-5 h-5 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
@@ -655,28 +610,26 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                 </div>
 
                 {/* Sub Category */}
-                <div className="relative">
+                <div>
+                  <label className={labelClass}>Sub Category *</label>
                   <div className="relative">
                     <select
                       name="subCategory"
                       value={formData.subCategory}
                       onChange={handleInputChange}
-                      className="peer w-full px-4 py-4 bg-white border border-gray-300 rounded text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed"
+                      className={`${inputClass} appearance-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed`}
                       disabled={!formData.caseCategory}
                       required
                     >
-                      <option value="">Sub Category*</option>
+                      <option value="">Select Sub Category</option>
                       {formData.caseCategory && subCategories[formData.caseCategory]?.map((sub) => (
                         <option key={sub} value={sub}>
                           {sub}
                         </option>
                       ))}
                     </select>
-                    <label className="absolute left-3 -top-2.5 bg-white px-1 text-xs text-gray-500">
-                      Sub Category*
-                    </label>
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { NoiseOverlay } from '@/src/components/common/NoiseOverlay';
 import { Footer } from '@/src/components/layout/Footer';
 import { Sidebar } from '@/src/components/layout/Sidebar';
+import { useAuth } from '@/src/contexts/AuthContext';
 
 // Mock data for registered cases - replace with actual data from your backend/state
 interface Case {
@@ -91,6 +92,17 @@ const getStatusLabel = (status: Case['status']) => {
 
 export const MyCases: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Get user display name from email
+  const userEmail = user?.email || '';
+  const userName = userEmail ? userEmail.split('@')[0] : 'User';
+  // Capitalize first letter of each word
+  const displayName = userName
+    .split(/[._-]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+  const userInitial = displayName.charAt(0).toUpperCase();
 
   const handleNewCase = () => {
     navigate('/mootcourt/intro');
@@ -102,7 +114,7 @@ export const MyCases: React.FC = () => {
       <NoiseOverlay />
 
       {/* Collapsed Sidebar */}
-      <Sidebar userInitial="J" />
+      <Sidebar userInitial={userInitial} userEmail={userEmail} />
 
       {/* Main Content Container - with left margin for collapsed sidebar */}
       <div className="relative z-10 ml-16 min-h-screen flex flex-col">
@@ -111,7 +123,7 @@ export const MyCases: React.FC = () => {
             {/* Welcome Section */}
             <div className="mb-12">
               <h1 className="text-4xl md:text-5xl font-serif text-black mb-3">
-                Welcome Back, <span className="italic font-vesper">John Doe</span>
+                Welcome Back, <span className="italic font-vesper">{displayName}</span>
               </h1>
               <button className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#f0ede8] text-gray-700 rounded-full text-sm font-medium hover:bg-[#e8e4dc] transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
