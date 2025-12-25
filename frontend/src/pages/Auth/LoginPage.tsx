@@ -1,18 +1,42 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { NoiseOverlay } from '@/src/components/common/NoiseOverlay';
+import { useAuth } from '@/src/contexts/AuthContext';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn, user, loading: authLoading } = useAuth();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Get the redirect path from location state, or default to /my-cases
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/my-cases';
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate(from, { replace: true });
+    }
+  }, [user, authLoading, navigate, from]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt:', { email, password });
-    // Navigate to My Cases page after login
-    navigate('/my-cases');
+    setError(null);
+    setLoading(true);
+
+    const { error } = await signIn(email, password);
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    } else {
+      // Navigation will happen automatically via the useEffect above
+      navigate(from, { replace: true });
+    }
   };
 
   return (
@@ -64,11 +88,26 @@ export const LoginPage: React.FC = () => {
               />
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-black text-white font-sans font-medium px-8 py-2.5 rounded-lg hover:bg-black/80 transition-colors mt-8"
+              disabled={loading}
+              className="w-full bg-black text-white font-sans font-medium px-8 py-2.5 rounded-lg hover:bg-black/80 transition-colors mt-8 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Continue
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                  Signing in...
+                </span>
+              ) : (
+                'Continue'
+              )}
             </button>
           </form>
         </div>

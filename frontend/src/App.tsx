@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { HomePage } from './pages/Home/HomePage';
 import { LoginPage } from './pages/Auth/LoginPage';
 import { MyCases } from './pages/mainpage/MyCases';
@@ -13,17 +15,47 @@ import { VerdictPrediction } from './pages/mootcourt/prediction/VerdictPredictio
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/my-cases" element={<MyCases />} />
-        <Route path="/mootcourt/intro" element={<DocumentIntro />} />
-        <Route path="/mootcourt/template" element={<ConsumerComplaintTemplate />} />
-        <Route path="/mootcourt/preview" element={<ComplaintPreview />} />
-        <Route path="/mootcourt/transition" element={<DocumentZoomOut />} />
-        <Route path="/mootcourt/questions" element={<JudgeQuestions />} />
-        <Route path="/mootcourt/prediction" element={<VerdictPrediction />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/my-cases" element={
+            <ProtectedRoute>
+              <MyCases />
+            </ProtectedRoute>
+          } />
+          <Route path="/mootcourt/intro" element={
+            <ProtectedRoute>
+              <DocumentIntro />
+            </ProtectedRoute>
+          } />
+          <Route path="/mootcourt/template" element={
+            <ProtectedRoute>
+              <ConsumerComplaintTemplate />
+            </ProtectedRoute>
+          } />
+          <Route path="/mootcourt/preview" element={
+            <ProtectedRoute>
+              <ComplaintPreview />
+            </ProtectedRoute>
+          } />
+          <Route path="/mootcourt/transition" element={
+            <ProtectedRoute>
+              <DocumentZoomOut />
+            </ProtectedRoute>
+          } />
+          <Route path="/mootcourt/questions" element={
+            <ProtectedRoute>
+              <JudgeQuestions />
+            </ProtectedRoute>
+          } />
+          <Route path="/mootcourt/prediction" element={
+            <ProtectedRoute>
+              <VerdictPrediction />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 };
