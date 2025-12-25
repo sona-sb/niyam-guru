@@ -49,7 +49,7 @@ export const LoginPage: React.FC = () => {
         <div className="relative z-10 w-full max-w-md px-8 lg:px-12">
           {/* Logo */}
           <div className="text-center mb-10">
-            <h1 className="text-4xl md:text-5xl tracking-wide font-semibold flex items-baseline justify-center gap-0.5">
+            <h1 className="text-3xl md:text-3xl tracking-wide font-semibold flex items-baseline justify-center gap-0.5">
               <span className="font-gotu">नियम</span>
               <span className="font-serif">-</span>
               <span className="font-instrument italic">guru</span>
@@ -59,7 +59,7 @@ export const LoginPage: React.FC = () => {
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block font-sans text-sm font-medium text-black mb-2">
+              <label htmlFor="email" className="block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2">
                 Email
               </label>
               <input
@@ -67,14 +67,14 @@ export const LoginPage: React.FC = () => {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-black/20 rounded-lg font-sans text-[15px] text-black placeholder-black/40 focus:outline-none focus:border-black transition-all duration-300"
+                className="w-full px-4 py-2.5 bg-white border border-black/10 rounded-xl font-sans text-[15px] text-black placeholder-black/40 focus:outline-none focus:border-black transition-all duration-300"
                 placeholder="you@company.com"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block font-sans text-sm font-medium text-black mb-2">
+              <label htmlFor="password" className="block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2">
                 Password
               </label>
               <input
@@ -82,10 +82,25 @@ export const LoginPage: React.FC = () => {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-black/20 rounded-lg font-sans text-[15px] text-black placeholder-black/40 focus:outline-none focus:border-black transition-all duration-300"
+                className="w-full px-4 py-2.5 bg-white border border-black/10 rounded-xl font-sans text-[15px] text-black placeholder-black/40 focus:outline-none focus:border-black transition-all duration-300"
                 placeholder="••••••••"
                 required
               />
+            </div>
+
+            {/* Privacy Policy Text */}
+            <div className="text-center">
+              <p className="text-xs text-black/60 font-sans leading-relaxed">
+                By signing in, you agree to our{' '}
+                <a href="#" className="text-black/70 underline hover:text-black transition-colors">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="#" className="text-black/70 underline hover:text-black transition-colors">
+                  Privacy Policy
+                </a>
+                , if you do not have an account request one to get started.
+              </p>
             </div>
 
             {/* Error Message */}
@@ -98,7 +113,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-black text-white font-sans font-medium px-8 py-2.5 rounded-lg hover:bg-black/80 transition-colors mt-8 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full bg-black text-white font-sans font-medium px-8 py-2.5 rounded-lg hover:bg-black/80 transition-colors mt-6 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {loading ? (
                 <span className="flex items-center gap-2">

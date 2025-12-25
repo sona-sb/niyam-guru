@@ -696,7 +696,7 @@ When you are ready, file your complaint.`;
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: 'white',
+          backgroundColor: '#fbf7ef',
           pointerEvents: 'none',
           opacity: showWhiteOverlay ? 1 : 0,
           transition: 'opacity 0.3s ease-out'

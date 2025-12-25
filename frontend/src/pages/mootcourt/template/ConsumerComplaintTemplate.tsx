@@ -405,7 +405,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
   };
 
   const inputClass =
-    'w-full px-4 py-2.5 bg-white border border-[#EBEBEB] rounded-xl font-sans text-[15px] text-black/60 placeholder-black/40 focus:outline-none focus:border-black/50 transition-all duration-300';
+    'w-full px-4 py-2.5 bg-white/90 border border-[#EBEBEB] rounded-xl font-sans text-[15px] text-black/60 placeholder-black/40 focus:outline-none focus:border-black/50 transition-all duration-300';
   const labelClass = 'block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2';
   const sectionTitleClass = 'font-semibold text-2xl md:text-2xl text-black mb-6';
 
@@ -474,7 +474,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
         <form className="space-y-8">
           {/* Case Details Section */}
           {currentSection === 0 && (
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
               <h3 className={sectionTitleClass}>Case Details</h3>
               
               {/* Row 1: Paid as consideration & Claim Consideration */}
@@ -641,7 +641,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Complainant / Opposite Party Section */}
           {currentSection === 1 && (
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
               <h3 className="font-semibold text-xl text-gray-900 mb-6">Complainant / Opposite Party</h3>
               
               {/* Complainant Details */}
@@ -801,7 +801,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Additional Complainant Section */}
           {currentSection === 2 && (
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
               <h3 className="font-semibold text-xl text-gray-900 mb-2">Additional Complainant</h3>
               <p className="text-sm text-gray-500 mb-6">
                 If there are multiple complainants, add their details here. This section is optional.
@@ -854,7 +854,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Additional Opposite Party Section */}
           {currentSection === 3 && (
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
               <h3 className="font-semibold text-xl text-gray-900 mb-2">Additional Opposite Party</h3>
               <p className="text-sm text-gray-500 mb-6">
                 If there are multiple opposite parties, add their details here. This section is optional.
@@ -907,7 +907,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Document Upload Section */}
           {currentSection === 4 && (
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
               <h3 className="font-semibold text-xl text-gray-900 mb-2">Document Upload</h3>
               <p className="text-sm text-gray-500 mb-8">
                 Upload the following mandatory documents to proceed with your complaint filing.
@@ -1245,7 +1245,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Final Submission & Checkout Section */}
           {currentSection === 5 && (
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
               <h3 className="font-semibold text-xl text-gray-900 mb-2">Final Submission & Checkout</h3>
               <p className="text-sm text-gray-500 mb-6">
                 Specify the relief you are seeking from the Consumer Forum.

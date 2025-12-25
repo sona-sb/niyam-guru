@@ -125,11 +125,11 @@ export const MyCases: React.FC = () => {
               <h1 className="text-4xl md:text-5xl font-serif text-black mb-3">
                 Welcome Back, <span className="italic font-vesper">{displayName}</span>
               </h1>
-              <button className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#f0ede8] text-gray-700 rounded-full text-sm font-medium hover:bg-[#e8e4dc] transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+              <button className="inline-flex items-center gap-1.5 px-4 py-3 text-gray-700 rounded-full border border-black text-sm font-medium hover:bg-[#e8e4dc] transition-colors">
                 Check Usage
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7 7 7-7 7" />
+                </svg>
               </button>
             </div>
 
@@ -139,7 +139,7 @@ export const MyCases: React.FC = () => {
               
               {/* Search and Register Row */}
               <div className="flex items-center justify-between gap-4">
-                <div className="relative flex-1 max-w-xs">
+                <div className="relative flex-1 max-w-xs border border-[#EBEBEB] rounded-lg">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -167,7 +167,7 @@ export const MyCases: React.FC = () => {
               {mockCases.map((caseItem) => (
                 <div
                   key={caseItem.id}
-                  className="group bg-[#FAF3E8] rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="group bg-[#FAF3E8] border border-[#EBEBEB] rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Case Header */}
                   <div className="flex items-start justify-between mb-4">
