@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NoiseOverlay } from '@/src/components/common/NoiseOverlay';
 import { Footer } from '@/src/components/layout/Footer';
@@ -15,54 +15,6 @@ interface Case {
   complainantName: string;
   oppositePartyName: string;
 }
-
-const mockCases: Case[] = [
-  {
-    id: '1',
-    caseName: 'XYZ Electronics Defective Product',
-    caseType: 'Consumer Complaint',
-    filingDate: '2025-12-15',
-    status: 'pending',
-    complainantName: 'John Doe',
-    oppositePartyName: 'XYZ Electronics Pvt. Ltd.',
-  },
-  {
-    id: '2',
-    caseName: 'ABC Services Refund Issue',
-    caseType: 'Consumer Complaint',
-    filingDate: '2025-12-10',
-    status: 'in-progress',
-    complainantName: 'Jane Smith',
-    oppositePartyName: 'ABC Services Ltd.',
-  },
-  {
-    id: '3',
-    caseName: 'Home Appliances Warranty Dispute',
-    caseType: 'Consumer Complaint',
-    filingDate: '2025-12-05',
-    status: 'completed',
-    complainantName: 'Raj Kumar',
-    oppositePartyName: 'Home Appliances Co.',
-  },
-  {
-    id: '4',
-    caseName: 'Mobile Phone Service Deficiency',
-    caseType: 'Consumer Complaint',
-    filingDate: '2025-11-28',
-    status: 'pending',
-    complainantName: 'Priya Sharma',
-    oppositePartyName: 'TeleCom Services',
-  },
-  {
-    id: '5',
-    caseName: 'Insurance Claim Rejection',
-    caseType: 'Consumer Complaint',
-    filingDate: '2025-11-20',
-    status: 'in-progress',
-    complainantName: 'Amit Patel',
-    oppositePartyName: 'SafeLife Insurance',
-  },
-];
 
 const getStatusColor = (status: Case['status']) => {
   switch (status) {
@@ -93,6 +45,17 @@ const getStatusLabel = (status: Case['status']) => {
 export const MyCases: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // State for cases and dialog
+  const [cases, setCases] = useState<Case[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newCase, setNewCase] = useState({
+    caseName: '',
+    complainantName: '',
+    oppositePartyName: '',
+    filingDate: new Date().toISOString().split('T')[0],
+    status: 'pending' as Case['status'],
+  });
 
   // Get user display name from email
   const userEmail = user?.email || '';
@@ -105,6 +68,40 @@ export const MyCases: React.FC = () => {
   const userInitial = displayName.charAt(0).toUpperCase();
 
   const handleNewCase = () => {
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setNewCase({
+      caseName: '',
+      complainantName: '',
+      oppositePartyName: '',
+      filingDate: new Date().toISOString().split('T')[0],
+      status: 'pending',
+    });
+  };
+
+  const handleCreateCase = () => {
+    if (!newCase.caseName || !newCase.complainantName || !newCase.oppositePartyName) {
+      return;
+    }
+    
+    const createdCase: Case = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      caseName: newCase.caseName,
+      caseType: 'Consumer Complaint',
+      filingDate: newCase.filingDate,
+      status: newCase.status,
+      complainantName: newCase.complainantName,
+      oppositePartyName: newCase.oppositePartyName,
+    };
+    
+    setCases(prev => [...prev, createdCase]);
+    handleCloseDialog();
+  };
+
+  const handleCaseClick = () => {
     navigate('/mootcourt/intro');
   };
 
@@ -162,11 +159,12 @@ export const MyCases: React.FC = () => {
             </div>
 
           {/* Cases Grid */}
-          {mockCases.length > 0 ? (
+          {cases.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {mockCases.map((caseItem) => (
+              {cases.map((caseItem) => (
                 <div
                   key={caseItem.id}
+                  onClick={handleCaseClick}
                   className="group bg-[#FAF3E8] border border-[#EBEBEB] rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Case Header */}
@@ -289,47 +287,13 @@ export const MyCases: React.FC = () => {
           ) : (
             /* Empty State */
             <div className="flex flex-col items-center justify-center py-16 px-4">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-                <svg
-                  className="w-12 h-12 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 No cases registered yet
               </h3>
-              <p className="text-gray-500 text-center mb-6 max-w-md">
+              <p className="text-gray-500 text-center mb-6 max-w-md text-sm">
                 Start by registering your first consumer complaint. Our AI-powered
                 system will help you through the process.
               </p>
-              <button
-                onClick={handleNewCase}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 font-medium"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Register Your First Case
-              </button>
             </div>
           )}
           </main>
@@ -337,6 +301,119 @@ export const MyCases: React.FC = () => {
           <Footer />
         </div>
       </div>
+
+      {/* New Case Dialog */}
+      {isDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={handleCloseDialog}
+          />
+          
+          {/* Dialog */}
+          <div className="relative bg-[#FAF3E8] rounded-lg p-8 w-full max-w-md mx-4 shadow-2xl border border-[#EBEBEB]">
+            <h3 className="text-2xl font-semibold text-black mb-6">Register New Case</h3>
+            
+            <div className="space-y-4">
+              {/* Case Title */}
+              <div>
+                <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2">
+                  Case Title *
+                </label>
+                <input
+                  type="text"
+                  value={newCase.caseName}
+                  onChange={(e) => setNewCase(prev => ({ ...prev, caseName: e.target.value }))}
+                  className="w-full px-4 py-2.5 bg-[#FAF3E8] border-2 border-black/20 rounded-xl font-sans text-[15px] text-black/80 placeholder-black/40 focus:outline-none focus:border-black/50 transition-all duration-300"
+                  placeholder="Enter case title"
+                />
+              </div>
+
+              {/* Complainant Name */}
+              <div>
+                <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2">
+                  Complainant Name *
+                </label>
+                <input
+                  type="text"
+                  value={newCase.complainantName}
+                  onChange={(e) => setNewCase(prev => ({ ...prev, complainantName: e.target.value }))}
+                  className="w-full px-4 py-2.5 bg-[#FAF3E8] border-2 border-black/20 rounded-xl font-sans text-[15px] text-black/80 placeholder-black/40 focus:outline-none focus:border-black/50 transition-all duration-300"
+                  placeholder="Enter complainant name"
+                />
+              </div>
+
+              {/* Against */}
+              <div>
+                <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2">
+                  Against *
+                </label>
+                <input
+                  type="text"
+                  value={newCase.oppositePartyName}
+                  onChange={(e) => setNewCase(prev => ({ ...prev, oppositePartyName: e.target.value }))}
+                  className="w-full px-4 py-2.5 bg-[#FAF3E8] border-2 border-black/20 rounded-xl font-sans text-[15px] text-black/80 placeholder-black/40 focus:outline-none focus:border-black/50 transition-all duration-300"
+                  placeholder="Enter opposite party name"
+                />
+              </div>
+
+              {/* Filing Date */}
+              <div>
+                <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2">
+                  Filing Date
+                </label>
+                <input
+                  type="date"
+                  value={newCase.filingDate}
+                  onChange={(e) => setNewCase(prev => ({ ...prev, filingDate: e.target.value }))}
+                  className="w-full px-4 py-2.5 bg-[#FAF3E8] border-2 border-black/20 rounded-xl font-sans text-[15px] text-black/80 focus:outline-none focus:border-black/50 transition-all duration-300"
+                />
+              </div>
+
+              {/* Case Status */}
+              <div>
+                <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-black/70 mb-2">
+                  Case Status
+                </label>
+                <div className="relative">
+                  <select
+                    value={newCase.status}
+                    onChange={(e) => setNewCase(prev => ({ ...prev, status: e.target.value as Case['status'] }))}
+                    className="w-full px-4 py-2.5 bg-[#FAF3E8] border-2 border-black/20 rounded-xl font-sans text-[15px] text-black/80 focus:outline-none focus:border-black/50 transition-all duration-300 appearance-none cursor-pointer"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-8">
+              <button
+                onClick={handleCloseDialog}
+                className="px-4 py-2 text-black/70 hover:text-black text-sm font-medium rounded-lg hover:bg-black/5 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateCase}
+                disabled={!newCase.caseName || !newCase.complainantName || !newCase.oppositePartyName}
+                className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Create Case
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
