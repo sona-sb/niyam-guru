@@ -31,5 +31,10 @@ ENRICH_MODEL = os.getenv("ENRICH_MODEL", "gemini-2.0-flash")
 # Rate limiting (seconds between API calls)
 API_RATE_LIMIT_SECONDS = float(os.getenv("API_RATE_LIMIT_SECONDS", "4.0"))  # 15 RPM = 4 sec delay
 
+# Supabase Configuration
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://hocixcxbpmzncblhqxqk.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")  # Use service role key for backend
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")  # Anon key for client operations
+
 # Misc app options
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"

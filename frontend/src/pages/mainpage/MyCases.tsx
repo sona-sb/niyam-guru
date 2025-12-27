@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NoiseOverlay } from '@/src/components/common/NoiseOverlay';
 import { Footer } from '@/src/components/layout/Footer';
 import { Sidebar } from '@/src/components/layout/Sidebar';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { supabase } from '@/src/lib/supabase';
 
-// Mock data for registered cases - replace with actual data from your backend/state
+// Interface matching the Supabase table structure
 interface Case {
   id: string;
   caseName: string;
@@ -48,7 +49,9 @@ export const MyCases: React.FC = () => {
   
   // State for cases and dialog
   const [cases, setCases] = useState<Case[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [newCase, setNewCase] = useState({
     caseName: '',
     complainantName: '',
@@ -67,6 +70,48 @@ export const MyCases: React.FC = () => {
     .join(' ');
   const userInitial = displayName.charAt(0).toUpperCase();
 
+  // Fetch cases from Supabase on component mount
+  useEffect(() => {
+    if (user?.id) {
+      fetchCases();
+    }
+  }, [user?.id]);
+
+  const fetchCases = async () => {
+    if (!user?.id) return;
+    
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_cases')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching cases:', error);
+        return;
+      }
+
+      // Transform database columns to camelCase for frontend
+      const transformedCases: Case[] = (data || []).map(row => ({
+        id: row.id,
+        caseName: row.case_name,
+        caseType: row.case_type,
+        filingDate: row.filing_date,
+        status: row.status,
+        complainantName: row.complainant_name,
+        oppositePartyName: row.opposite_party_name,
+      }));
+
+      setCases(transformedCases);
+    } catch (err) {
+      console.error('Error fetching cases:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleNewCase = () => {
     setIsDialogOpen(true);
   };
@@ -82,23 +127,50 @@ export const MyCases: React.FC = () => {
     });
   };
 
-  const handleCreateCase = () => {
-    if (!newCase.caseName || !newCase.complainantName || !newCase.oppositePartyName) {
+  const handleCreateCase = async () => {
+    if (!newCase.caseName || !newCase.complainantName || !newCase.oppositePartyName || !user?.id) {
       return;
     }
-    
-    const createdCase: Case = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      caseName: newCase.caseName,
-      caseType: 'Consumer Complaint',
-      filingDate: newCase.filingDate,
-      status: newCase.status,
-      complainantName: newCase.complainantName,
-      oppositePartyName: newCase.oppositePartyName,
-    };
-    
-    setCases(prev => [...prev, createdCase]);
-    handleCloseDialog();
+
+    setIsCreating(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_cases')
+        .insert({
+          user_id: user.id,
+          case_name: newCase.caseName,
+          case_type: 'Consumer Complaint',
+          filing_date: newCase.filingDate,
+          status: newCase.status,
+          complainant_name: newCase.complainantName,
+          opposite_party_name: newCase.oppositePartyName,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating case:', error);
+        return;
+      }
+
+      // Add the new case to the list
+      const createdCase: Case = {
+        id: data.id,
+        caseName: data.case_name,
+        caseType: data.case_type,
+        filingDate: data.filing_date,
+        status: data.status,
+        complainantName: data.complainant_name,
+        oppositePartyName: data.opposite_party_name,
+      };
+
+      setCases(prev => [createdCase, ...prev]);
+      handleCloseDialog();
+    } catch (err) {
+      console.error('Error creating case:', err);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleCaseClick = () => {
@@ -159,7 +231,12 @@ export const MyCases: React.FC = () => {
             </div>
 
           {/* Cases Grid */}
-          {cases.length > 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mb-4"></div>
+              <p className="text-gray-500 text-sm">Loading your cases...</p>
+            </div>
+          ) : cases.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {cases.map((caseItem) => (
                 <div
@@ -399,16 +476,24 @@ export const MyCases: React.FC = () => {
             <div className="flex justify-end gap-3 mt-8">
               <button
                 onClick={handleCloseDialog}
-                className="px-4 py-2 text-black/70 hover:text-black text-sm font-medium rounded-lg hover:bg-black/5 transition-colors"
+                disabled={isCreating}
+                className="px-4 py-2 text-black/70 hover:text-black text-sm font-medium rounded-lg hover:bg-black/5 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateCase}
-                disabled={!newCase.caseName || !newCase.complainantName || !newCase.oppositePartyName}
-                className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!newCase.caseName || !newCase.complainantName || !newCase.oppositePartyName || isCreating}
+                className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Create Case
+                {isCreating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Creating...
+                  </>
+                ) : (
+                  'Create Case'
+                )}
               </button>
             </div>
           </div>

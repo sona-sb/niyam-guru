@@ -13,6 +13,9 @@ from .settings import (
     LLM_MODEL,
     ENRICH_MODEL,
     API_RATE_LIMIT_SECONDS,
+    SUPABASE_URL,
+    SUPABASE_KEY,
+    SUPABASE_ANON_KEY,
     DEBUG,
 )
 
@@ -30,5 +33,8 @@ __all__ = [
     "LLM_MODEL",
     "ENRICH_MODEL",
     "API_RATE_LIMIT_SECONDS",
+    "SUPABASE_URL",
+    "SUPABASE_KEY",
+    "SUPABASE_ANON_KEY",
     "DEBUG",
 ]

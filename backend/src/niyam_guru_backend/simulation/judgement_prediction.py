@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -10,6 +11,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.prompts import PromptTemplate
 from langchain_classic.chains.retrieval_qa.base import RetrievalQA
+from supabase import create_client, Client
 
 # Import configuration from settings
 from niyam_guru_backend.config import (
@@ -18,6 +20,8 @@ from niyam_guru_backend.config import (
     VECTORSTORE_DIR,
     SIMULATION_DIR,
     DATA_DIR,
+    SUPABASE_URL,
+    SUPABASE_KEY,
 )
 
 # Path to the Consumer Protection Act 2019 PDF
@@ -239,6 +243,87 @@ The response must be valid JSON that can be parsed directly.'''
     return qa_chain
 
 
+def get_supabase_client() -> Optional[Client]:
+    """Initialize and return the Supabase client."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("⚠️ Warning: Supabase credentials not configured. Data will only be saved locally.")
+        return None
+    
+    try:
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        return supabase
+    except Exception as e:
+        print(f"⚠️ Error initializing Supabase client: {e}")
+        return None
+
+
+def save_to_supabase(
+    supabase: Client,
+    json_data: dict,
+    query: str,
+    user_id: Optional[str] = None,
+    cpa_included: bool = False
+) -> Optional[str]:
+    """
+    Save the judgment prediction to Supabase.
+    
+    Args:
+        supabase: Supabase client instance
+        json_data: The parsed judgment prediction JSON
+        query: Original user query
+        user_id: Optional user ID (UUID) for associating with a user
+        cpa_included: Whether CPA 2019 was included in the context
+        
+    Returns:
+        The ID of the created record, or None if failed
+    """
+    try:
+        # Extract key fields from JSON for easier querying
+        case_summary = json_data.get("Case_Summary", {})
+        judgment_reasoning = json_data.get("Judgment_Reasoning", {})
+        relief_granted = json_data.get("Relief_Granted", {})
+        simulation_metadata = json_data.get("Simulation_Metadata", {})
+        compensation_range = relief_granted.get("Total_Compensation_Range", {})
+        
+        # Prepare the record
+        record = {
+            "user_query": query,
+            "case_title": case_summary.get("Title"),
+            "case_type": case_summary.get("Case_Type"),
+            "claim_amount": case_summary.get("Consumer_Details", {}).get("Claim_Amount"),
+            "consumer_description": case_summary.get("Consumer_Details", {}).get("Description"),
+            "opposite_party_description": case_summary.get("Opposite_Party_Details", {}).get("Description"),
+            "case_strength": simulation_metadata.get("Case_Strength"),
+            "success_probability": simulation_metadata.get("Success_Probability"),
+            "liability_status": judgment_reasoning.get("Liability_Status"),
+            "recommended_forum": relief_granted.get("Recommended_Forum"),
+            "compensation_minimum": compensation_range.get("Minimum"),
+            "compensation_maximum": compensation_range.get("Maximum"),
+            "compensation_most_likely": compensation_range.get("Most_Likely"),
+            "prediction_json": json_data,
+            "cpa_2019_included": cpa_included,
+        }
+        
+        # Add user_id if provided
+        if user_id:
+            record["user_id"] = user_id
+        
+        # Insert into Supabase
+        result = supabase.table("judgment_predictions").insert(record).execute()
+        
+        if result.data and len(result.data) > 0:
+            record_id = result.data[0].get("id")
+            print(f"✅ Judgment prediction saved to Supabase with ID: {record_id}")
+            return record_id
+        else:
+            print("⚠️ Warning: Insert succeeded but no data returned")
+            return None
+            
+    except Exception as e:
+        print(f"⚠️ Error saving to Supabase: {e}")
+        return None
+
+
 def save_simulation_json(json_data: dict, query: str) -> Path:
     """Save the simulation JSON to a timestamped folder."""
     # Create timestamp-based folder name
@@ -285,15 +370,21 @@ def parse_llm_response(response_text: str) -> dict:
         }
 
 
-def run_judgment_prediction(query: str) -> tuple[dict, Path]:
+def run_judgment_prediction(
+    query: str,
+    user_id: Optional[str] = None,
+    save_to_db: bool = True
+) -> tuple[dict, Path, Optional[str]]:
     """
     Run the judgment prediction pipeline and save results.
     
     Args:
         query: The user's case description
+        user_id: Optional user ID (UUID) for associating prediction with a user
+        save_to_db: Whether to save to Supabase database (default True)
         
     Returns:
-        Tuple of (parsed JSON response, path to saved file)
+        Tuple of (parsed JSON response, path to saved file, Supabase record ID or None)
     """
     print("--- Step 1: Loading Consumer Protection Act 2019 ---")
     cpa_context = load_cpa_2019_context()
@@ -328,12 +419,29 @@ def run_judgment_prediction(query: str) -> tuple[dict, Path]:
     json_response["_timestamp"] = datetime.now().isoformat()
     json_response["_cpa_2019_included"] = bool(cpa_context)
     
-    # Save to file
-    print("\n--- Step 6: Saving Simulation Data ---")
+    # Save to local file
+    print("\n--- Step 6: Saving Simulation Data Locally ---")
     saved_path = save_simulation_json(json_response, query)
     print(f"✅ Simulation JSON saved to: {saved_path}")
     
-    return json_response, saved_path
+    # Save to Supabase database
+    supabase_record_id = None
+    if save_to_db:
+        print("\n--- Step 7: Saving to Supabase Database ---")
+        supabase = get_supabase_client()
+        if supabase:
+            supabase_record_id = save_to_supabase(
+                supabase=supabase,
+                json_data=json_response,
+                query=query,
+                user_id=user_id,
+                cpa_included=bool(cpa_context)
+            )
+            if supabase_record_id:
+                # Add Supabase record ID to the local JSON for reference
+                json_response["_supabase_id"] = supabase_record_id
+    
+    return json_response, saved_path, supabase_record_id
 
 
 # ========== Main Execution ==========
@@ -347,8 +455,8 @@ damaged phone. The phone was purchased for Rs. 25,000.
 What are the chances of winning this case? What compensation can be expected?
 """
     
-    # Run the prediction
-    result, saved_file = run_judgment_prediction(query)
+    # Run the prediction (saves to both local file and Supabase)
+    result, saved_file, supabase_id = run_judgment_prediction(query)
     
     # Display results
     print("\n" + "=" * 70)
@@ -367,4 +475,6 @@ What are the chances of winning this case? What compensation can be expected?
     
     print("\n" + "=" * 70)
     print(f"Full JSON saved to: {saved_file}")
+    if supabase_id:
+        print(f"Supabase record ID: {supabase_id}")
     print("=" * 70)
