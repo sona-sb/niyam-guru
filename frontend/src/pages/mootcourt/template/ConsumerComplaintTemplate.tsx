@@ -496,7 +496,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                     required
                   />
                   {formData.paidAsConsideration && (
-                    <p className="text-xs text-green-600 font-medium mt-1.5">
+                    <p className="text-xs text-black/70 font-medium mt-1.5">
                       {numberToIndianWords(parseInt(formData.paidAsConsideration))}
                     </p>
                   )}
@@ -517,7 +517,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                     placeholder="Enter your claim amount"
                   />
                   {formData.claimConsideration && (
-                    <p className="text-xs text-green-600 font-medium mt-1.5">
+                    <p className="text-xs text-black/70 font-medium mt-1.5">
                       {numberToIndianWords(parseInt(formData.claimConsideration))}
                     </p>
                   )}
@@ -1306,18 +1306,15 @@ export const ConsumerComplaintTemplate: React.FC = () => {
 
           {/* Navigation Buttons */}
           <div className="flex justify-between items-center pt-6">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="lg"
               onClick={() => setCurrentSection(Math.max(0, currentSection - 1))}
-              className={`px-6 py-2.5 rounded-lg font-sans font-medium transition-all duration-300 ${
-                currentSection === 0
-                  ? 'bg-black/10 text-black/40 cursor-not-allowed'
-                  : 'bg-black/5 text-black hover:bg-black/10'
-              }`}
               disabled={currentSection === 0}
             >
               Previous
-            </button>
+            </Button>
 
             <div className="flex gap-4">
               {currentSection < sections.length - 1 ? (

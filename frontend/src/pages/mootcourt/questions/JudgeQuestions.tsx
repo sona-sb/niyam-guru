@@ -247,12 +247,12 @@ export const JudgeQuestions: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="relative min-h-screen w-full bg-[#FAFAFA] flex flex-col items-center justify-center">
+      <div className="relative min-h-screen w-full bg-[#fbf7ef] flex flex-col items-center justify-center">
         <NoiseOverlay />
         <div className="relative z-10 text-center">
           <div className="w-16 h-16 border-4 border-black/20 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="font-sans text-lg text-black/70">Preparing Judge's Questions...</p>
-          <p className="font-sans text-sm text-black/50 mt-2">Analyzing your case details</p>
+          <p className="font-semibold text-lg text-black/70">Preparing Judge's Questions...</p>
+          <p className="font-medium text-sm text-black/50 mt-1">Analyzing your case details</p>
         </div>
       </div>
     );
