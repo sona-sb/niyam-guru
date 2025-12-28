@@ -15,49 +15,49 @@ export const HomePage: React.FC = () => {
       {/* Background Stars - Absolute & Scrollable (Pinned to page content) */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden h-full">
         {/* Top Left Star */}
-        <div className="absolute top-[650px] left-[5%] text-black/[0.10] rotate-45">
+        <div className="absolute top-162.5 left-[5%] text-black/10 rotate-45">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
           </svg>
         </div>
         {/* Left Star - Mid section */}
-        <div className="absolute top-[1100px] left-[19%] text-black/[0.10] rotate-[15deg]">
+        <div className="absolute top-275 left-[19%] text-black/10 rotate-15">
           <svg width="50" height="50" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
           </svg>
         </div>
         {/* Middle Right Star */}
-        <div className="absolute top-[1400px] right-[12%] text-black/[0.10] rotate-[-20deg]">
+        <div className="absolute top-350 right-[12%] text-black/10 rotate-[-20deg]">
           <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
           </svg>
         </div>
         {/* Center Star */}
-        <div className="absolute top-[1800px] left-[45%] text-black/[0.10] rotate-[30deg]">
+        <div className="absolute top-450 left-[45%] text-black/10 rotate-30">
           <svg width="45" height="45" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
           </svg>
         </div>
         {/* Bottom Left Star */}
-        <div className="absolute top-[2200px] left-[8%] text-black/[0.10] rotate-[10deg]">
+        <div className="absolute top-550 left-[8%] text-black/10 rotate-10">
           <svg width="38" height="38" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
           </svg>
         </div>
         {/* Bottom Center-Right Star */}
-        <div className="absolute top-[2500px] right-[25%] text-black/[0.10] rotate-[-15deg]">
+        <div className="absolute top-625 right-[25%] text-black/10 rotate-[-15deg]">
           <svg width="42" height="42" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
           </svg>
         </div>
         {/* Bottom Right Star */}
-        <div className="absolute top-[2900px] right-[10%] text-black/[0.10] rotate-[25deg]">
+        <div className="absolute top-725 right-[10%] text-black/10 rotate-25">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
           </svg>
         </div>
         {/* Far Bottom Left Star */}
-        <div className="absolute top-[3200px] left-[15%] text-black/[0.10] rotate-[5deg]">
+        <div className="absolute top-800 left-[15%] text-black/10 rotate-[5deg]">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
           </svg>
@@ -68,9 +68,9 @@ export const HomePage: React.FC = () => {
       <NoiseOverlay />
 
       {/* Main Content Container */}
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20 py-8 flex flex-col">
+      <div className="relative z-10 max-w-350 mx-auto px-6 md:px-12 lg:px-20 py-8 flex flex-col">
         <Navbar />
-        <main className="flex-grow flex flex-col mt-6 md:mt-16 space-y-32">
+        <main className="grow flex flex-col mt-6 md:mt-16 space-y-32">
           <Hero />
           <About />
           <Features />

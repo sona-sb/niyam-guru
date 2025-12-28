@@ -324,7 +324,7 @@ export const JudgeQuestions: React.FC = () => {
           </div>
           <div className="text-right">
             <p className="font-sans text-xs text-black/50">Case</p>
-            <p className="font-sans text-sm font-medium text-black truncate max-w-[150px]">
+            <p className="font-sans text-sm font-medium text-black truncate max-w-37.5">
               {caseTitle}
             </p>
           </div>
@@ -344,7 +344,7 @@ export const JudgeQuestions: React.FC = () => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-black/50 flex-shrink-0"
+            className="text-black/50 shrink-0"
           >
             <circle cx="12" cy="12" r="10" />
             <path d="M12 16v-4" />
@@ -458,7 +458,7 @@ export const JudgeQuestions: React.FC = () => {
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Type your response to the Judge..."
-                  className="w-full px-4 py-4 bg-black/5 border-0 rounded-xl font-sans text-[15px] text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-black/20 resize-none min-h-[52px] max-h-[150px]"
+                  className="w-full px-4 py-4 bg-black/5 border-0 rounded-xl font-sans text-[15px] text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-black/20 resize-none min-h-13 max-h-37.5"
                   rows={1}
                   disabled={isJudgeTyping}
                 />
@@ -468,7 +468,7 @@ export const JudgeQuestions: React.FC = () => {
                 size="md"
                 onClick={handleSendMessage}
                 disabled={!userInput.trim() || isJudgeTyping}
-                className="flex items-center justify-center h-[52px] w-[52px] !p-0 rounded-xl mb-[7px]"
+                className="flex items-center justify-center h-13 w-13 p-0! rounded-xl mb-1.75"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

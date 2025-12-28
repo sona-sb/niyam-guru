@@ -16,14 +16,14 @@ export const Hero: React.FC = () => {
           Empowering consumers with <br />
           <span className="group relative inline-block cursor-pointer align-bottom">
             {/* Base Layer: Black Text + Black Border */}
-            <span className="relative z-10 block border-b-[3px] border-black pb-[2px]">
+            <span className="relative z-10 block border-b-[3px] border-black pb-0.5">
               legal certainty.
             </span>
             
             {/* Overlay Layer: Black Background (Wipe) + White Text */}
             <span className="absolute top-0 left-0 h-full w-0 overflow-hidden bg-black transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:w-full z-20">
               {/* Inverted Text - Absolute to prevent wrapping and keep position static relative to wipe */}
-              <span className="absolute top-0 left-0 whitespace-nowrap border-b-[3px] border-[#fbf7ef] pb-[2px] text-[#fbf7ef]">
+              <span className="absolute top-0 left-0 whitespace-nowrap border-b-[3px] border-[#fbf7ef] pb-0.5 text-[#fbf7ef]">
                 legal certainty.
               </span>
             </span>
@@ -32,7 +32,7 @@ export const Hero: React.FC = () => {
       </div>
 
       {/* Description Section */}
-      <div className="max-w-[650px] mb-12">
+      <div className="max-w-162.5 mb-12">
         <p className="font-sans text-[13px] md:text-[15px] leading-relaxed text-black/90 font-normal text-left">
           Built to guide consumers through disputes with clarity - combining real legal judgments, structured analysis, and transparent reasoning to help you understand your rights with confidence.
         </p>

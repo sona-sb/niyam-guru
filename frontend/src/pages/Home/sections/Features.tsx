@@ -40,7 +40,7 @@ const FeatureBlock: React.FC<FeatureBlockProps> = ({ title, description, subFeat
 
     {/* Graphic/Image Placeholder */}
     <div className="flex-1 order-1 lg:order-2">
-      <div className="w-full aspect-[4/3] bg-black/5 border border-black/5 overflow-hidden relative group-hover:bg-black/10 transition-colors duration-500">
+      <div className="w-full aspect-4/3 bg-black/5 border border-black/5 overflow-hidden relative group-hover:bg-black/10 transition-colors duration-500">
         {/* Abstract Placeholder Graphic */}
         <div className="absolute inset-0 flex items-center justify-center p-8">
           <div className="w-full h-full bg-white shadow-sm flex items-center justify-center border border-black/5">
@@ -48,7 +48,7 @@ const FeatureBlock: React.FC<FeatureBlockProps> = ({ title, description, subFeat
           </div>
           
           {/* Decorative elements representing UI */}
-          <div className="absolute top-[20%] right-[15%] w-24 h-24 bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-full blur-xl pointer-events-none"></div>
+          <div className="absolute top-[20%] right-[15%] w-24 h-24 bg-linear-to-br from-blue-100/50 to-purple-100/50 rounded-full blur-xl pointer-events-none"></div>
         </div>
       </div>
     </div>
