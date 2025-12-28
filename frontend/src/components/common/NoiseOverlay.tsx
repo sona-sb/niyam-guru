@@ -2,7 +2,7 @@ import React from 'react';
 
 export const NoiseOverlay: React.FC = () => {
   return (
-    <div className="fixed inset-0 z-[1] pointer-events-none opacity-100 mix-blend-overlay">
+    <div className="fixed inset-0 z-1 pointer-events-none opacity-100 mix-blend-overlay">
       <svg className="w-full h-full">
         <filter id="noiseFilter">
           <feTurbulence 
