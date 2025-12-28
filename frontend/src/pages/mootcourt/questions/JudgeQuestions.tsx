@@ -261,7 +261,7 @@ export const JudgeQuestions: React.FC = () => {
   // Error state
   if (loadError) {
     return (
-      <div className="relative min-h-screen w-full bg-[#FAFAFA] flex flex-col items-center justify-center">
+      <div className="relative min-h-screen w-full bg-[#fbf7ef] flex flex-col items-center justify-center">
         <NoiseOverlay />
         <div className="relative z-10 text-center max-w-md mx-auto px-4">
           <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
@@ -293,11 +293,11 @@ export const JudgeQuestions: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-[#FAFAFA] flex flex-col">
+    <div className="relative min-h-screen w-full bg-[#fbf7ef] flex flex-col">
       <NoiseOverlay />
 
       {/* Header */}
-      <div className="relative z-10 bg-white border-b border-black/10 px-4 md:px-6 py-4">
+      <div className="relative z-10 px-4 md:px-6 py-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center">
@@ -332,8 +332,8 @@ export const JudgeQuestions: React.FC = () => {
       </div>
 
       {/* Progress Indicator */}
-      <div className="relative z-10 bg-blue-50 border-b border-blue-100 px-4 md:px-6 py-3">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
+      <div className="relative z-10 px-4 md:px-6 py-3">
+        <div className="max-w-4xl mx-auto flex items-center gap-3 bg-black/5 rounded-xl px-4 py-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18"
@@ -344,13 +344,13 @@ export const JudgeQuestions: React.FC = () => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-blue-600 flex-shrink-0"
+            className="text-black/50 flex-shrink-0"
           >
             <circle cx="12" cy="12" r="10" />
             <path d="M12 16v-4" />
             <path d="M12 8h.01" />
           </svg>
-          <p className="font-sans text-sm text-blue-800">
+          <p className="font-sans text-sm text-black/60">
             {allQuestionsAnswered 
               ? "All questions answered. Ready to proceed to verdict."
               : `Question ${Math.min(currentQuestionIndex + 1, questions.length)} of ${questions.length} — Please provide detailed and honest responses.`
@@ -370,15 +370,15 @@ export const JudgeQuestions: React.FC = () => {
               <div
                 className={`max-w-[80%] md:max-w-[70%] ${
                   message.sender === 'user'
-                    ? 'bg-black text-white rounded-2xl rounded-br-md'
-                    : 'bg-white border border-black/10 text-black rounded-2xl rounded-bl-md'
+                    ? 'bg-black text-[#FAF3E8] rounded-2xl rounded-br-md'
+                    : 'bg-[#FAF3E8] border border-[#EBEBEB] text-black rounded-2xl rounded-bl-md'
                 } px-4 py-3 shadow-sm`}
               >
                 {message.sender === 'judge' && (
                   <p className="font-sans text-xs text-black/50 mb-1 font-medium">Hon'ble Judge</p>
                 )}
                 <p className={`font-sans text-[15px] leading-relaxed whitespace-pre-wrap ${
-                  message.sender === 'user' ? 'text-white' : 'text-black/90'
+                  message.sender === 'user' ? 'text-[#FAF3E8]' : 'text-black/90'
                 }`}>
                   {message.content}
                 </p>
@@ -410,7 +410,7 @@ export const JudgeQuestions: React.FC = () => {
       </div>
 
       {/* Input Area */}
-      <div className="relative z-10 bg-white border-t border-black/10 px-4 md:px-6 py-4">
+      <div className="relative z-10 px-4 md:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {allQuestionsAnswered ? (
             <div className="flex flex-col items-center gap-4">
@@ -458,7 +458,7 @@ export const JudgeQuestions: React.FC = () => {
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Type your response to the Judge..."
-                  className="w-full px-4 py-3 bg-black/5 border-0 rounded-xl font-sans text-[15px] text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-black/20 resize-none min-h-[52px] max-h-[150px]"
+                  className="w-full px-4 py-4 bg-black/5 border-0 rounded-xl font-sans text-[15px] text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-black/20 resize-none min-h-[52px] max-h-[150px]"
                   rows={1}
                   disabled={isJudgeTyping}
                 />
@@ -468,7 +468,7 @@ export const JudgeQuestions: React.FC = () => {
                 size="md"
                 onClick={handleSendMessage}
                 disabled={!userInput.trim() || isJudgeTyping}
-                className="flex items-center justify-center h-[52px] w-[52px] !p-0 rounded-xl"
+                className="flex items-center justify-center h-[52px] w-[52px] !p-0 rounded-xl mb-[7px]"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
