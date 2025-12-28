@@ -433,7 +433,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           <div className="relative flex items-start justify-between">
             {/* Connector Line - Single straight line behind all circles */}
             <div className="absolute top-5 left-0 right-0 flex items-center px-10">
-              <div className="w-full h-[2px] bg-gray-300 relative">
+              <div className="w-full h-0.5 bg-gray-300 relative">
                 <div 
                   className="absolute top-0 left-0 h-full bg-black transition-all duration-300"
                   style={{ width: `${(currentSection / (sections.length - 1)) * 100}%` }}
@@ -456,7 +456,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                 </button>
                 
                 {/* Step Title */}
-                <span className={`mt-3 text-xs text-center max-w-[100px] leading-tight ${
+                <span className={`mt-3 text-xs text-center max-w-25 leading-tight ${
                   index === currentSection ? 'text-black font-medium' : 'text-gray-500'
                 }`}>
                   {section.title}
@@ -698,7 +698,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                       name="complainantAddress"
                       value={formData.complainantAddress}
                       onChange={handleInputChange}
-                      className={`${inputClass} min-h-[100px]`}
+                      className={`${inputClass} min-h-25`}
                       placeholder="Enter complete address with PIN code"
                       required
                     />
@@ -763,7 +763,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                       name="oppositePartyAddress"
                       value={formData.oppositePartyAddress}
                       onChange={handleInputChange}
-                      className={`${inputClass} min-h-[100px]`}
+                      className={`${inputClass} min-h-25`}
                       placeholder="Enter complete registered/business address"
                       required
                     />
@@ -1253,7 +1253,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                     name="reliefSought"
                     value={formData.reliefSought}
                     onChange={handleInputChange}
-                    className={`${inputClass} min-h-[120px]`}
+                    className={`${inputClass} min-h-30`}
                     placeholder="e.g., Refund of amount paid, Replacement of defective product, Compensation for mental agony and harassment, Cost of litigation"
                     required
                   />

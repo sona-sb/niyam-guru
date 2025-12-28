@@ -187,8 +187,8 @@ export const MyCases: React.FC = () => {
 
       {/* Main Content Container - with left margin for collapsed sidebar */}
       <div className="relative z-10 ml-16 min-h-screen flex flex-col">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-8 flex flex-col flex-grow w-full">
-          <main className="flex-grow">
+        <div className="max-w-300 mx-auto px-6 md:px-12 py-8 flex flex-col grow w-full">
+          <main className="grow">
             {/* Welcome Section */}
             <div className="mb-12">
               <h1 className="text-4xl md:text-5xl font-serif text-black mb-3">
