@@ -46,16 +46,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-16 bg-[#FAF3E8] border-r border-gray-200 flex flex-col z-50">
+    <aside className="fixed left-4 top-1/2 -translate-y-1/2 h-[calc(100vh-2rem)] w-14 bg-[#FAF3E8] backdrop-blur-sm border border-[#EBEBEB] rounded-lg flex flex-col z-50 shadow-sm">
       {/* Spacer to push profile to bottom */}
       <div className="flex-1" />
 
       {/* Profile Picture at Bottom */}
-      <div className="p-3.5 pb-3 relative">
+      <div className="p-1.5 pb-2 relative flex justify-center">
         <button 
           ref={buttonRef}
           onClick={() => setShowPopup(!showPopup)}
-          className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-200 to-orange-300 flex items-center justify-center text-sm font-semibold text-orange-900 shadow-sm hover:shadow-md transition-shadow"
+          className="w-9 h-9 rounded-full bg-linear-to-br from-orange-200 to-orange-300 flex items-center justify-center text-sm font-semibold text-orange-900 shadow-sm hover:shadow-md hover:scale-105 transition-all"
         >
           {displayInitial}
         </button>
@@ -64,12 +64,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {showPopup && (
           <div 
             ref={popupRef}
-            className="absolute bottom-full left-3 mb-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
+            className="absolute bottom-0 left-full ml-3 w-56 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
           >
             {/* User Info */}
             <div className="px-4 py-3 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-200 to-orange-300 flex items-center justify-center text-sm font-semibold text-orange-900">
+                <div className="w-10 h-10 rounded-full bg-linear-to-br from-orange-200 to-orange-300 flex items-center justify-center text-sm font-semibold text-orange-900">
                   {displayInitial}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -86,7 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+              className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-600 hover:text-white transition-colors flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
