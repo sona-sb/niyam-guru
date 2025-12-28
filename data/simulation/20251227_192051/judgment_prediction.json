@@ -1,0 +1,357 @@
+{
+  "Case_Summary": {
+    "Title": "Arjun Jayakumar vs. NovaCart Online Services Pvt. Ltd. (Defective Mobile Phone & Deficiency in Service)",
+    "Case_Type": "Defective Goods, Deficiency in Service, Unfair Trade Practice",
+    "Consumer_Details": {
+      "Description": "Arjun Jayakumar, a 21-year-old Software Engineer residing in Trivandrum, purchased a mobile phone online from NovaCart Online Services Pvt. Ltd. for personal use.",
+      "Claim_Amount": "Rs. 18,499 (Refund) + Rs. 35,000 (Compensation) = Rs. 53,499",
+      "Key_Grievances": [
+        "Receipt of a defective mobile phone upon delivery.",
+        "Failure of NovaCart Online Services Pvt. Ltd. to provide a satisfactory resolution (repair, replacement, or refund) despite reporting the defect.",
+        "Deficiency in post-sale service and customer support.",
+        "Unfair trade practice by refusing to take back defective goods and refund consideration."
+      ]
+    },
+    "Opposite_Party_Details": {
+      "Description": "NovaCart Online Services Pvt. Ltd. is an e-commerce platform operating from Bengaluru, Karnataka, engaged in the sale and distribution of goods, including mobile phones.",
+      "Defense_Arguments": [
+        "Denial of the alleged defect, claiming the product was in perfect condition upon dispatch.",
+        "Attribution of the defect to consumer misuse or mishandling after delivery.",
+        "Claim that the issue falls under standard warranty terms, not a manufacturing defect warranting immediate refund/replacement.",
+        "Assertion that their customer support protocols were followed, and a resolution (e.g., repair) was offered but refused by the consumer.",
+        "Contention that the claim for mental agony and punitive damages is excessive and unsubstantiated."
+      ]
+    },
+    "Facts_of_Case": [
+      "Arjun Jayakumar (Complainant) purchased a mobile phone for Rs. 18,499 from NovaCart Online Services Pvt. Ltd. (Opposite Party) via their online platform.",
+      "The transaction was completed, and the payment of Rs. 18,499 was made.",
+      "Upon delivery of the mobile phone, the Complainant discovered a significant defect (e.g., non-functional screen, severe battery drain, camera malfunction, etc. - *specific defect needs to be detailed in the actual complaint*).",
+      "The Complainant promptly reported the defect to NovaCart's customer support, seeking a replacement or refund.",
+      "NovaCart Online Services Pvt. Ltd. allegedly failed to provide a satisfactory resolution, either by refusing to acknowledge the defect, offering inadequate repair, or declining a full refund/replacement.",
+      "The Complainant has been deprived of the use of the product and suffered inconvenience and mental agony due to the defective product and the Opposite Party's unresponsive service.",
+      "The date of cause of action is stated as 2025-12-06, implying the complaint is being filed shortly after this event, making it within the limitation period."
+    ],
+    "Evidence_Available": [
+      "Proof of purchase (order confirmation, invoice, payment receipt for Rs. 18,499).",
+      "Delivery receipt/confirmation.",
+      "Photographs or videos clearly showing the defect in the mobile phone.",
+      "Correspondence with NovaCart customer support (emails, chat transcripts, call recordings, complaint IDs).",
+      "Product packaging and any warranty cards."
+    ],
+    "Evidence_Missing": [
+      "An independent expert's report or service center diagnostic report confirming the manufacturing defect and ruling out user damage.",
+      "Detailed log of all communication attempts with NovaCart, including dates, times, and specific responses.",
+      "Affidavit from a witness (if any) to the unboxing or initial discovery of the defect.",
+      "Specific details of the defect and how it impacts the phone's functionality."
+    ]
+  },
+  "Legal_Grounds": {
+    "Applicable_Sections": [
+      {
+        "Section": "2(7)",
+        "Act": "Consumer Protection Act, 2019",
+        "Description": "Defines 'consumer' as any person who buys any goods for a consideration which has been paid or promised, and includes any user of such goods for consideration, but does not include a person who obtains such goods for resale or for any commercial purpose.",
+        "Relevance_to_Case": "Arjun Jayakumar, having purchased the mobile phone for personal use by paying consideration, clearly falls within the definition of a 'consumer' under this Act."
+      },
+      {
+        "Section": "2(10)",
+        "Act": "Consumer Protection Act, 2019",
+        "Description": "Defines 'defect' as any fault, imperfection or shortcoming in the quality, quantity, potency, purity or standard which is required to be maintained by or under any law or under any contract, express or implied or as is claimed by the trader in any manner whatsoever in relation to any goods or product.",
+        "Relevance_to_Case": "The alleged manufacturing fault in the mobile phone, rendering it non-functional or impaired, constitutes a 'defect' as per this definition."
+      },
+      {
+        "Section": "2(11)",
+        "Act": "Consumer Protection Act, 2019",
+        "Description": "Defines 'deficiency' as any fault, imperfection, shortcoming or inadequacy in the quality, nature and manner of performance which is required to be maintained by or under any law or has been undertaken to be performed by a person in pursuance of a contract or otherwise in relation to any service and includes any act of negligence or omission or commission by such person which causes loss or injury to the consumer; and deliberate withholding of relevant information by such person to the consumer.",
+        "Relevance_to_Case": "NovaCart's alleged failure to adequately address the defect, provide proper customer support, or offer a timely resolution (replacement/refund) constitutes a 'deficiency in service'."
+      },
+      {
+        "Section": "2(47)(viii)",
+        "Act": "Consumer Protection Act, 2019",
+        "Description": "Includes 'refusing, after selling goods or rendering services, to take back or withdraw defective goods or to withdraw or discontinue deficient services and to refund the consideration thereof, if paid, within the period stipulated in the bill or cash memo or receipt or in the absence of such stipulation, within a period of thirty days' as an 'unfair trade practice'.",
+        "Relevance_to_Case": "If NovaCart refused to take back the defective mobile phone and refund the consideration within a reasonable period (or 30 days in absence of stipulation), it amounts to an 'unfair trade practice'."
+      },
+      {
+        "Section": "34(1)",
+        "Act": "Consumer Protection Act, 2019",
+        "Description": "Establishes the pecuniary jurisdiction of the District Commission for complaints where the value of the goods or services paid as consideration does not exceed fifty lakh rupees.",
+        "Relevance_to_Case": "The value of the mobile phone (consideration paid) is Rs. 18,499, which is well within the Rs. 50 lakh limit, making the District Commission the appropriate forum for filing this complaint."
+      },
+      {
+        "Section": "35",
+        "Act": "Consumer Protection Act, 2019",
+        "Description": "Outlines the manner in which a complaint shall be made, including who can file and the format.",
+        "Relevance_to_Case": "Arjun Jayakumar, as a consumer, is eligible to file a complaint in writing or electronic mode as per this section."
+      },
+      {
+        "Section": "39",
+        "Act": "Consumer Protection Act, 2019",
+        "Description": "Details the powers of the District Commission upon being satisfied that the goods complained against suffer from any defect or that the allegations contained in the complaint about the services are proved, including ordering removal of defect, replacement, refund, and compensation.",
+        "Relevance_to_Case": "This section provides the legal basis for the District Commission to grant the reliefs sought by Arjun Jayakumar, including refund, compensation for mental agony, and litigation costs."
+      }
+    ],
+    "Precedents_Cited": [
+      {
+        "Case_Name": "Jose Philip Mampillil vs Premier Automobiles Ltd And Anr",
+        "Year": "2004",
+        "Court": "National Consumer Disputes Redressal Commission (NCDRC)",
+        "Key_Holding": "Established liability for defective goods and deficiency in service by a manufacturer/dealer, leading to orders for repair, compensation for mental agony, and costs.",
+        "Relevance": "This case supports the Complainant's claim for a refund due to a defective product and compensation for mental agony and litigation costs caused by the Opposite Party's failure to rectify the defect or provide adequate service."
+      },
+      {
+        "Case_Name": "M S Paramount Digital Color Lab vs M S Agfa India Pvt Ltd",
+        "Year": "2018",
+        "Court": "National Consumer Disputes Redressal Commission (NCDRC)",
+        "Key_Holding": "Reiterated the interpretation of 'consumer' under Section 2(1)(d) of the CPA, 1986 (analogous to 2(7) of CPA 2019), confirming that purchasers for self-employment (not for resale or large-scale commercial profit) qualify as consumers.",
+        "Relevance": "While Arjun is an SWE and not self-employed in the traditional sense of using the phone for livelihood, this case reinforces the broad interpretation of 'consumer' for personal use, ensuring Arjun's standing as a consumer."
+      },
+      {
+        "Case_Name": "Pioneer Urban Land And Infrastructure vs Govindan Raghavan",
+        "Year": "2019",
+        "Court": "Supreme Court of India",
+        "Key_Holding": "Upheld the National Commission's finding that one-sided clauses in agreements constitute unfair trade practices and affirmed the right to refund with interest as compensation for deficiency in service.",
+        "Relevance": "Though a real estate case, it establishes the principle that unfair practices and deficiency in service warrant a refund and compensation, which is applicable by analogy to NovaCart's refusal to resolve the defective product issue."
+      }
+    ],
+    "Legal_Principles": [
+      "**Caveat Venditor (Seller Beware):** The onus is on the seller to ensure the goods sold are fit for purpose and free from defects, especially in consumer transactions.",
+      "**Right to Redressal:** Consumers have a right to seek redressal against unfair trade practices or unscrupulous exploitation.",
+      "**Defective Goods:** A seller is liable for goods that suffer from any fault, imperfection, or shortcoming.",
+      "**Deficiency in Service:** Failure to provide service of the agreed quality, nature, or manner, or any act of negligence causing loss, constitutes deficiency.",
+      "**Unfair Trade Practice:** Practices that are deceptive or misleading, or that cause disadvantage to the consumer, are prohibited.",
+      "**Pecuniary Jurisdiction:** The value of the goods or services paid as consideration determines the appropriate consumer forum."
+    ],
+    "Contextual_Notes": "The Consumer Protection Act, 2019, specifically includes 'e-commerce' (Section 2(16)) within its ambit, making online sellers like NovaCart fully accountable. The Act also explicitly defines 'electronic service provider' (Section 2(17)) and 'product seller' (Section 2(37)), strengthening the consumer's position against online platforms. The future date of cause of action (2025-12-06) is assumed to be a placeholder for a recent or imminent event for the purpose of this simulation, ensuring the complaint is within the two-year limitation period under Section 69."
+  },
+  "Judgment_Reasoning": {
+    "Issues_Framed": [
+      {
+        "Issue_Number": 1,
+        "Issue": "Whether Arjun Jayakumar is a 'consumer' under the Consumer Protection Act, 2019?",
+        "Analysis": "Based on the details, Arjun purchased the mobile phone for personal use by paying consideration. This squarely fits the definition of 'consumer' under Section 2(7) of the CPA, 2019. There is no indication of purchase for resale or commercial purpose.",
+        "Finding": "Yes, Arjun Jayakumar is a consumer."
+      },
+      {
+        "Issue_Number": 2,
+        "Issue": "Whether the mobile phone supplied by NovaCart Online Services Pvt. Ltd. was 'defective' and whether there was 'deficiency in service' or 'unfair trade practice' by the Opposite Party?",
+        "Analysis": "The core of the case hinges on proving the mobile phone was defective at the time of delivery or shortly thereafter, and that NovaCart failed to provide adequate resolution. If the Complainant provides sufficient evidence (e.g., photos/videos, communication logs showing refusal to resolve), the defect and deficiency in service (Section 2(10) & 2(11)) will likely be established. NovaCart's refusal to take back the defective goods and refund the amount would also constitute an unfair trade practice under Section 2(47)(viii). The lack of an independent expert report is a weakness, but initial evidence and communication can establish a prima facie case.",
+        "Finding": "Likely Yes, subject to sufficient evidence from the Complainant regarding the defect and NovaCart's non-resolution."
+      },
+      {
+        "Issue_Number": 3,
+        "Issue": "What relief, if any, is the Complainant entitled to?",
+        "Analysis": "If the defect and deficiency/unfair trade practice are proven, the Complainant is entitled to a refund of the purchase price (Section 39(1)(a)(ii)). Compensation for mental agony and harassment is also a standard relief in such cases (Section 39(1)(d)), as is litigation cost (Section 39(1)(g)). Punitive damages (Section 39(1)(da)) are awarded in cases of egregious conduct or widespread harm, which would require stronger evidence of deliberate misconduct by NovaCart.",
+        "Finding": "Entitled to refund, compensation for mental agony, and litigation costs. Punitive damages are possible but require higher threshold of proof."
+      }
+    ],
+    "Findings": "The Complainant is a valid consumer. The mobile phone is alleged to be defective, and the Opposite Party is alleged to have provided deficient service and engaged in unfair trade practices by failing to resolve the issue. If the Complainant successfully proves the defect and the Opposite Party's inaction, the District Commission is likely to rule in favor of the consumer.",
+    "Key_Evidence": [
+      "Invoice/Order Confirmation (proof of purchase and price)",
+      "Photographic/Video evidence of the defect (crucial for establishing defect)",
+      "Communication records with NovaCart (demonstrates deficiency in service/unfair practice)"
+    ],
+    "Evidence_Analysis": {
+      "Consumer_Evidence_Strength": "Moderate. The available evidence (purchase proof, communication) is good, but the lack of an independent expert report on the defect is a notable gap that the Opposite Party might exploit.",
+      "Opposite_Party_Defense_Strength": "Moderate. Without an expert report from the consumer, NovaCart can argue user damage or that the issue is minor and covered by standard warranty, or that they offered reasonable solutions.",
+      "Critical_Gaps": [
+        "Absence of a professional diagnostic report confirming the defect and its origin (manufacturing vs. user-induced).",
+        "Lack of specific details about the nature and severity of the defect in the complaint details provided."
+      ]
+    },
+    "Inference": "Based on the typical pattern of consumer complaints regarding defective electronics purchased online, it can be inferred that the Complainant genuinely faced an issue with the product and experienced frustration due to the seller's inadequate response. The burden of proving the defect will initially rest on the consumer, but if a prima facie case is made, the onus may shift to the seller to prove the product was not defective or that the defect was due to consumer misuse.",
+    "Liability_Status": "Likely Established, contingent on the Complainant's ability to substantiate the defect and the Opposite Party's failure to resolve.",
+    "Liability_Confidence": "75%",
+    "Reasoning_Chain": [
+      "Arjun is a consumer as per CPA 2019, having purchased goods for consideration for personal use.",
+      "The mobile phone is alleged to be defective, falling under 'defective goods' as per Section 2(10).",
+      "NovaCart's failure to provide a satisfactory resolution (refund/replacement) after being notified of the defect constitutes 'deficiency in service' (Section 2(11)).",
+      "Refusal to take back defective goods and refund consideration also amounts to an 'unfair trade practice' (Section 2(47)(viii)).",
+      "The total claim amount falls within the pecuniary jurisdiction of the District Commission (Section 34).",
+      "Therefore, if the defect and NovaCart's non-compliance are proven, the District Commission has the power to order refund, compensation, and costs under Section 39."
+    ]
+  },
+  "Relief_Granted": {
+    "Primary_Relief": {
+      "Type": "Refund",
+      "Amount": "Rs. 18,499",
+      "Description": "Full refund of the purchase amount paid for the defective mobile phone."
+    },
+    "Additional_Relief": [
+      {
+        "Type": "Compensation for Mental Agony and Harassment",
+        "Amount": "Rs. 10,000 - Rs. 20,000",
+        "Justification": "The Complainant suffered inconvenience, frustration, and mental distress due to receiving a defective product and the subsequent unresponsive customer service from the Opposite Party. This is a standard component of relief in consumer cases involving defective goods and deficiency in service."
+      },
+      {
+        "Type": "Litigation Costs",
+        "Amount": "Rs. 5,000 - Rs. 10,000",
+        "Justification": "The Complainant incurred expenses in pursuing the complaint, including filing fees, legal consultation (if any), and other miscellaneous costs. These costs are typically awarded to the successful party."
+      },
+      {
+        "Type": "Punitive Damages",
+        "Amount": "Discretionary (up to Rs. 50,000, but less likely)",
+        "Justification": "While sought, punitive damages are usually awarded in cases of egregious misconduct, widespread harm, or repeated unfair practices. Unless NovaCart's conduct is proven to be exceptionally malicious or part of a larger pattern, this relief might be limited or not granted. If granted, it would be to deter similar conduct."
+      }
+    ],
+    "Predicted_Outcomes": [
+      {
+        "Relief": "Refund of Purchase Price (Rs. 18,499)",
+        "Confidence": "90% [85-95]",
+        "Probability_Assessment": "High"
+      },
+      {
+        "Relief": "Compensation for Mental Agony (Rs. 10,000 - Rs. 20,000)",
+        "Confidence": "80% [70-90]",
+        "Probability_Assessment": "High"
+      },
+      {
+        "Relief": "Litigation Costs (Rs. 5,000 - Rs. 10,000)",
+        "Confidence": "85% [75-95]",
+        "Probability_Assessment": "High"
+      },
+      {
+        "Relief": "Punitive Damages",
+        "Confidence": "30% [20-40]",
+        "Probability_Assessment": "Low"
+      }
+    ],
+    "Total_Compensation_Range": {
+      "Minimum": "Rs. 33,499 (18,499 + 10,000 + 5,000)",
+      "Maximum": "Rs. 48,499 (18,499 + 20,000 + 10,000)",
+      "Most_Likely": "Rs. 40,000 (18,499 + 15,000 + 6,501)"
+    },
+    "Time_Frame": "6-18 months (at District Commission level, excluding appeals)",
+    "Recommended_Forum": "District Consumer Disputes Redressal Commission, Trivandrum, Kerala",
+    "Recommended_Action": "File a formal complaint with the District Consumer Disputes Redressal Commission. Ensure all available evidence is meticulously organized. Seek an independent expert opinion on the mobile phone's defect if possible, as this would significantly strengthen the case."
+  },
+  "Simulation_Metadata": {
+    "Case_Strength": "Moderate",
+    "Success_Probability": "75%",
+    "Key_Arguments_For_Consumer": [
+      "The mobile phone was delivered with a manufacturing defect, rendering it unfit for its intended use.",
+      "NovaCart Online Services Pvt. Ltd. failed to provide adequate post-sale service, refusing to replace, repair, or refund the defective product.",
+      "This constitutes both a defect in goods and a deficiency in service, as well as an unfair trade practice under CPA 2019.",
+      "The Complainant suffered mental agony and financial loss due to the Opposite Party's actions/inactions."
+    ],
+    "Key_Arguments_For_Opposite_Party": [
+      "The product was inspected and found to be in working condition before dispatch.",
+      "The alleged defect might be due to mishandling or misuse by the consumer after delivery.",
+      "NovaCart offered standard warranty repair services, which the consumer refused, insisting on a refund/replacement outside policy terms.",
+      "The claim for mental agony and punitive damages is speculative and disproportionate to the alleged issue."
+    ],
+    "Critical_Moments": [
+      "The submission of compelling evidence (photos/videos) of the defect.",
+      "The clarity and consistency of communication records with NovaCart.",
+      "The Opposite Party's response to the complaint and their ability to demonstrate attempts at resolution or prove consumer fault.",
+      "The potential for an independent expert's report to definitively establish the defect's origin."
+    ],
+    "Suggested_Witnesses": [
+      "Complainant (Arjun Jayakumar) to testify about the purchase, receipt, defect discovery, and communication with NovaCart.",
+      "An independent mobile phone technician/expert who can provide a diagnostic report on the defect (if obtained).",
+      "Delivery personnel (if there's a dispute about the condition at delivery, though less common)."
+    ],
+    "Documentary_Evidence_Required": [
+      "Online order details/screenshot.",
+      "Invoice/Bill of sale.",
+      "Proof of payment.",
+      "Delivery confirmation/receipt.",
+      "Photographs/Videos of the defective mobile phone.",
+      "All email, chat, or recorded call transcripts with NovaCart customer support.",
+      "Any service request numbers or complaint IDs.",
+      "Independent diagnostic report (highly recommended).",
+      "Copy of NovaCart's return/refund policy."
+    ],
+    "Estimated_Hearing_Duration": "3-5 hearings, potentially more if expert evidence is involved.",
+    "Complexity_Level": "Moderate",
+    "Similar_Cases_Referenced": [
+      "Jose Philip Mampillil vs Premier Automobiles Ltd And Anr",
+      "M S Paramount Digital Color Lab vs M S Agfa India Pvt Ltd",
+      "Pioneer Urban Land And Infrastructure vs Govindan Raghavan"
+    ]
+  },
+  "_source_documents": [
+    {
+      "metadata": {
+        "outcome": "nan",
+        "petitioner": "JOSE PHILIP MAMPILLIL",
+        "citation": "AIR 2004 SC 1529",
+        "pdf_file": "Jose_Philip_Mampillil_vs_Premier_Automobiles_Ltd_And_Anr_on_27_January_2004_1.PDF",
+        "case_title": "Jose Philip Mampillil vs Premier Automobiles Ltd And Anr",
+        "folder": "2004",
+        "date_of_judgment": "27 January 2004",
+        "year": "2004",
+        "respondent": "PREMIER AUTOMOBILES LTD. AND ANR."
+      },
+      "content_preview": "Case: Jose Philip Mampillil vs Premier Automobiles Ltd And Anr\nPetitioner: JOSE PHILIP MAMPILLIL vs Respondent: PREMIER AUTOMOBILES LTD. AND ANR.\nYear: 2004\n\nCase Context: Jose Philip Mampillil filed a complaint against Premier Automobiles Ltd. and its dealer (Respondents) regarding a defective Premier 1.38 Diesel Car. The appellant alleged defects in the paint and engine (piston rings) at the time of delivery, despite paying the full price. The grievance was that the defects were not adequately"
+    },
+    {
+      "metadata": {
+        "outcome": "modified",
+        "citation": "nan",
+        "folder": "2024",
+        "petitioner": "Dharmendra Sharma",
+        "case_title": "Dharmendra Sharma vs Agra Development Authority Vice",
+        "respondent": "Agra Development Authority Vice ...",
+        "pdf_file": "Dharmendra_Sharma_vs_Agra_Development_Authority_Vice_on_6_September_2024_1.PDF",
+        "year": "2024",
+        "date_of_judgment": "6 September 2024"
+      },
+      "content_preview": "Case: Dharmendra Sharma vs Agra Development Authority Vice\nPetitioner: Dharmendra Sharma vs Respondent: Agra Development Authority Vice ...\nYear: 2024\n\nCase Context: Dharmendra Sharma, the appellant, filed a consumer complaint against Agra Development Authority (ADA) regarding a delayed apartment possession and additional demands for payment. Sharma had applied for an apartment in 2011, made payments, but faced delays and demands for extra charges beyond the initial agreement. The core grievance"
+    },
+    {
+      "metadata": {
+        "pdf_file": "Pioneer_Urban_Land_And_Infrastructure_vs_Govindan_Raghavan_on_2_April_2019_1.PDF",
+        "petitioner": "Pioneer Urban Land And Infrastructure ...",
+        "outcome": "nan",
+        "folder": "2019",
+        "citation": "AIR 2019 SC 1779",
+        "respondent": "Govindan",
+        "case_title": "Pioneer Urban Land And Infrastructure vs Govindan Raghavan",
+        "date_of_judgment": "2 April 2019",
+        "year": "2019"
+      },
+      "content_preview": "Case: Pioneer Urban Land And Infrastructure vs Govindan Raghavan\nPetitioner: Pioneer Urban Land And Infrastructure ... vs Respondent: Govindan\nYear: 2019\n\nCase Context: Pioneer Urban Land & Infrastructure Ltd. appealed against the National Consumer Disputes Redressal Commission's order in favor of Govindan Raghavan (and Geetu Gidwani Verma in a connected appeal). The dispute arose from the builder's delay in obtaining the Occupancy Certificate and handing over possession of an apartment in the \""
+    },
+    {
+      "metadata": {
+        "date_of_judgment": "15 February 2018",
+        "folder": "2018",
+        "pdf_file": "M_S_Paramount_Digital_Color_Lab_vs_M_S_Agfa_India_Pvt_Ltd_on_15_February_2018_1.PDF",
+        "citation": "AIR 2018 SC 3449",
+        "case_title": "M S Paramount Digital Color Lab vs M S Agfa India Pvt Ltd",
+        "outcome": "nan",
+        "respondent": "M/S. Agfa India Pvt. Ltd. .",
+        "year": "2018",
+        "petitioner": "M/S. Paramount Digital Color Lab ."
+      },
+      "content_preview": "Case: M S Paramount Digital Color Lab vs M S Agfa India Pvt Ltd\nPetitioner: M/S. Paramount Digital Color Lab . vs Respondent: M/S. Agfa India Pvt. Ltd. .\nYear: 2018\n\nCase Context: M/S. Paramount Digital Color Lab, a partnership of unemployed graduates, purchased an 'Agfa Minilab D-Lab. 1 Allrounder' machine from M/S. Agfa India Pvt. Ltd. for their photography business. The appellants alleged that the machine was defective and did not perform as promised, leading to financial loss. The dispute ce"
+    },
+    {
+      "metadata": {
+        "folder": "2015",
+        "date_of_judgment": "8 April 2015",
+        "respondent": "Central Coalfields Ltd. Etc",
+        "citation": "nan",
+        "outcome": "nan",
+        "pdf_file": "S_J_Coke_Industries_Pvt_Ltd_Etc_vs_Central_Coalfields_Ltd_Etc_on_8_April_2015_1.PDF",
+        "case_title": "S J Coke Industries Pvt Ltd Etc vs Central Coalfields Ltd Etc",
+        "petitioner": "t. Ltd. Etc",
+        "year": "2015"
+      },
+      "content_preview": "Case: S J Coke Industries Pvt Ltd Etc vs Central Coalfields Ltd Etc\nPetitioner: t. Ltd. Etc vs Respondent: Central Coalfields Ltd. Etc\nYear: 2015\n\nCase Context: S.J. Coke Industries and other similar companies, private entities engaged in the coal business, filed writ petitions against Central Coalfields Ltd. (CCL), a public sector undertaking, seeking a refund of excess amounts paid for coal under an e-auction scheme that was later declared unconstitutional. The companies argued that they were "
+    }
+  ],
+  "_query": "══════════════════════════════════════════════════════════════════════\nCONSUMER COMPLAINT CASE DETAILS\n══════════════════════════════════════════════════════════════════════\n\n【 COMPLAINANT DETAILS 】\nName: Arjun Jayakumar\nS/o or W/o: S/o Jayakumar R\nAge: 21 years\nOccupation: SWE\nAddress: MLR - 44, Mangalam Lane, Sasthamanglam, Trivandrum - 695010\nContact: +91 8281423421\nEmail: arjun.jayan@gmail.com\n\n【 OPPOSITE PARTY DETAILS 】\nName/Company: NovaCart Online Services Pvt. Ltd.\nDesignation: Customer Support Manager\nAddress: NovaCart Online Services Pvt. Ltd, 3rd Floor, Orion Tech Park, Outer Ring Road, Mahadevapura, Bengaluru – 560048, Karnataka, India\nContact: +91 98765 43210\nEmail: support@novacart.in\n\n【 CASE CATEGORY & JURISDICTION 】\nCategory: CONSUMER DURABLES\nSub-Category: Mobile Phones\nState: Kerala\nDistrict: Trivandrum\nDate of Cause of Action: 2025-12-06\n\n【 TRANSACTION DETAILS 】\nPurchase Amount: Rs. 18499\n\n【 GRIEVANCE / COMPLAINT DETAILS 】\n\n【 CLAIM DETAILS 】\nAmount Paid as Consideration: Rs. 18499\nTotal Claim Amount: Rs. 35000\n\n【 RELIEF SOUGHT 】\nRefund of ₹18,499, compensation of ₹35,000 for mental agony, punitive damages, and litigation costs.\n\n\n══════════════════════════════════════════════════════════════════════\n\nBased on the above case details and attached documents, please analyze:\n1. What are the chances of winning this case?\n2. What compensation can be expected?\n3. Which forum should this case be filed in?\n4. What are the key legal provisions applicable?\n5. What additional evidence might strengthen the case?\n══════════════════════════════════════════════════════════════════════",
+  "_input_type": "structured_form",
+  "_timestamp": "2025-12-27T19:20:51.791286",
+  "_cpa_2019_included": true,
+  "_multimodal_processing": false,
+  "_form_data": {
+    "complainant_name": "Arjun Jayakumar",
+    "opposite_party_name": "NovaCart Online Services Pvt. Ltd.",
+    "case_category": "CONSUMER DURABLES",
+    "claim_amount": "35000",
+    "documents_count": 0,
+    "document_types": []
+  }
+}

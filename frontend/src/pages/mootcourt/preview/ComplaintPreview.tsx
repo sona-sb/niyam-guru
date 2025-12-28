@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/src/components/common/Button';
 import { NoiseOverlay } from '@/src/components/common/NoiseOverlay';
+import { useAuth } from '@/src/contexts/AuthContext';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 interface ComplaintFormData {
   // Complainant Details
@@ -70,8 +73,11 @@ interface UploadedFile {
 
 export const ComplaintPreview: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState<ComplaintFormData | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     // Retrieve form data from localStorage
@@ -90,12 +96,89 @@ export const ComplaintPreview: React.FC = () => {
     navigate('/mootcourt/template');
   };
 
-  const handleSubmit = () => {
-    // Handle final submission logic here
-    console.log('Submitting complaint:', formData);
-    console.log('Attached files:', uploadedFiles);
-    // Navigate to zoom out transition page
-    navigate('/mootcourt/transition');
+  const handleSubmit = async () => {
+    if (!formData) return;
+    
+    setIsSubmitting(true);
+    setSubmitError(null);
+    
+    try {
+      console.log('Submitting complaint to backend:', formData);
+      
+      // Prepare the request payload
+      const payload = {
+        formData: {
+          complainantName: formData.complainantName,
+          complainantFatherHusbandName: formData.complainantFatherHusbandName,
+          complainantAddress: formData.complainantAddress,
+          complainantPhone: formData.complainantPhone,
+          complainantEmail: formData.complainantEmail,
+          complainantAge: formData.complainantAge,
+          complainantOccupation: formData.complainantOccupation,
+          oppositePartyName: formData.oppositePartyName,
+          oppositePartyAddress: formData.oppositePartyAddress,
+          oppositePartyPhone: formData.oppositePartyPhone,
+          oppositePartyEmail: formData.oppositePartyEmail,
+          oppositePartyDesignation: formData.oppositePartyDesignation,
+          paidAsConsideration: formData.paidAsConsideration,
+          claimConsideration: formData.claimConsideration,
+          dateOfCauseOfAction: formData.dateOfCauseOfAction,
+          stateOfCauseOfAction: formData.stateOfCauseOfAction,
+          districtOfCauseOfAction: formData.districtOfCauseOfAction,
+          caseCategory: formData.caseCategory,
+          subCategory: formData.subCategory,
+          forumName: formData.forumName,
+          districtName: formData.districtName,
+          stateName: formData.stateName,
+          productServiceDescription: formData.productServiceDescription,
+          purchaseDate: formData.purchaseDate,
+          purchaseAmount: formData.purchaseAmount,
+          paymentMode: formData.paymentMode,
+          invoiceNumber: formData.invoiceNumber,
+          grievanceDescription: formData.grievanceDescription,
+          deficiencyType: formData.deficiencyType,
+          dateOfDeficiency: formData.dateOfDeficiency,
+          priorComplaintDate: formData.priorComplaintDate,
+          priorComplaintDetails: formData.priorComplaintDetails,
+          responseReceived: formData.responseReceived,
+          reliefSought: formData.reliefSought,
+        },
+        files: [], // TODO: Include file content as base64 if needed
+        userId: user?.id || null,
+        saveToDb: true,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/prediction/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `API Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.predictionId) {
+        // Store the prediction ID for the verdict page to fetch
+        localStorage.setItem('currentPredictionId', data.predictionId);
+        console.log('Prediction saved with ID:', data.predictionId);
+        
+        // Navigate to zoom out transition page
+        navigate('/mootcourt/transition');
+      } else {
+        throw new Error(data.error || 'Failed to get prediction');
+      }
+    } catch (error) {
+      console.error('Error submitting complaint:', error);
+      setSubmitError(error instanceof Error ? error.message : 'Failed to submit complaint');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -377,12 +460,38 @@ export const ComplaintPreview: React.FC = () => {
 
         </div>
 
+        {/* Error Message */}
+        {submitError && (
+          <div className="max-w-4xl mx-auto mb-4">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-red-600 shrink-0 mt-0.5"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="m15 9-6 6" />
+                <path d="m9 9 6 6" />
+              </svg>
+              <p className="font-sans text-sm text-red-800">{submitError}</p>
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-4xl mx-auto pt-8 pb-6">
           <Button
             variant="outline"
             size="lg"
             onClick={handleEdit}
+            disabled={isSubmitting}
             className="w-full sm:w-auto flex items-center justify-center gap-2"
           >
             <svg
@@ -406,23 +515,33 @@ export const ComplaintPreview: React.FC = () => {
             variant="primary"
             size="lg"
             onClick={handleSubmit}
+            disabled={isSubmitting}
             className="w-full sm:w-auto flex items-center justify-center gap-2"
           >
-            Submit Complaint
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M5 12h14" />
-              <path d="m12 5 7 7-7 7" />
-            </svg>
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Analyzing Case...
+              </>
+            ) : (
+              <>
+                Submit Complaint
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </>
+            )}
           </Button>
         </div>
 
