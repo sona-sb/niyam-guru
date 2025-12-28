@@ -15,6 +15,7 @@ from contextlib import asynccontextmanager
 import os
 
 from niyam_guru_backend.api.prediction_routes import router as prediction_router
+from niyam_guru_backend.api.question_routes import router as question_router
 
 
 @asynccontextmanager
@@ -87,6 +88,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(prediction_router)
+app.include_router(question_router)
 
 
 # Root endpoint

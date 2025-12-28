@@ -86,7 +86,15 @@ export const VerdictPrediction: React.FC = () => {
   const getVerdictText = (): string => {
     if (!predictionRecord) return '';
     
-    const json = predictionRecord.prediction_json;
+    // Parse prediction_json if it's a string
+    let json = predictionRecord.prediction_json;
+    if (typeof json === 'string') {
+      try {
+        json = JSON.parse(json);
+      } catch (e) {
+        return 'Prediction analysis complete.';
+      }
+    }
     
     // Try to construct a verdict from the prediction JSON
     if (json?.Judgment_Reasoning?.Findings) {
@@ -108,7 +116,16 @@ export const VerdictPrediction: React.FC = () => {
     
     // Create a JSON file with the full prediction
     const element = document.createElement('a');
-    const content = JSON.stringify(predictionRecord.prediction_json, null, 2);
+    // Parse the prediction_json if it's a string
+    let predictionData = predictionRecord.prediction_json;
+    if (typeof predictionData === 'string') {
+      try {
+        predictionData = JSON.parse(predictionData);
+      } catch (e) {
+        console.error('Error parsing prediction_json for download:', e);
+      }
+    }
+    const content = JSON.stringify(predictionData, null, 2);
     const file = new Blob([content], { type: 'application/json' });
     element.href = URL.createObjectURL(file);
     element.download = `Verdict_${predictionRecord.case_title || 'prediction'}_${new Date().toISOString().split('T')[0]}.json`;
@@ -160,7 +177,19 @@ export const VerdictPrediction: React.FC = () => {
   }
 
   // Extract data from prediction record
-  const json = predictionRecord.prediction_json || {};
+  // Handle case where prediction_json might be a string that needs parsing
+  let json: any = {};
+  try {
+    if (typeof predictionRecord.prediction_json === 'string') {
+      json = JSON.parse(predictionRecord.prediction_json);
+    } else {
+      json = predictionRecord.prediction_json || {};
+    }
+  } catch (e) {
+    console.error('Error parsing prediction_json:', e);
+    json = {};
+  }
+  
   const caseSummary = json?.Case_Summary || {};
   const judgmentReasoning = json?.Judgment_Reasoning || {};
   const reliefGranted = json?.Relief_Granted || {};
