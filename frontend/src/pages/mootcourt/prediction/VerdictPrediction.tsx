@@ -145,7 +145,7 @@ export const VerdictPrediction: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="relative min-h-screen w-full bg-[#FAFAFA] flex items-center justify-center">
+      <div className="relative min-h-screen w-full bg-[#fbf7ef] flex items-center justify-center">
         <NoiseOverlay />
         <div className="relative z-10 text-center">
           <div className="w-16 h-16 border-4 border-black/20 border-t-black rounded-full animate-spin mx-auto mb-6"></div>
@@ -158,7 +158,7 @@ export const VerdictPrediction: React.FC = () => {
 
   if (error || !predictionRecord) {
     return (
-      <div className="relative min-h-screen w-full bg-[#FAFAFA] flex items-center justify-center">
+      <div className="relative min-h-screen w-full bg-[#fbf7ef] flex items-center justify-center">
         <NoiseOverlay />
         <div className="relative z-10 text-center max-w-md mx-auto px-4">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -197,18 +197,12 @@ export const VerdictPrediction: React.FC = () => {
   const simulationMetadata = json?.Simulation_Metadata || {};
 
   return (
-    <div className="relative min-h-screen w-full bg-[#FAFAFA]">
+    <div className="relative min-h-screen w-full bg-[#fbf7ef]">
       <NoiseOverlay />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl tracking-wide font-semibold flex items-baseline justify-center gap-0.5 mb-4">
-            <span className="font-gotu">नियम</span>
-            <span className="font-serif">-</span>
-            <span className="font-instrument italic">guru</span>
-          </h1>
-          
           {/* Court Emblem/Icon */}
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-black/5 flex items-center justify-center">
             <svg
@@ -229,13 +223,13 @@ export const VerdictPrediction: React.FC = () => {
         </div>
 
         {/* Verdict Card */}
-        <div className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-[#FAF3E8] border border-[#EBEBEB] rounded-2xl overflow-hidden shadow-sm">
           {/* Card Header */}
           <div className="bg-black text-white px-6 md:px-8 py-6 text-center">
-            <p className="font-sans text-sm uppercase tracking-wider text-white/70 mb-2">
+            <p className="font-sans text-sm uppercase tracking-wider text-white/70 mb-3">
               Consumer Disputes Redressal Forum
             </p>
-            <h2 className="font-sans text-lg md:text-xl font-medium">
+            <h2 className="font-serif text-4xl md:text-4xl font-medium">
               AI Judgment Prediction
             </h2>
           </div>
@@ -259,8 +253,8 @@ export const VerdictPrediction: React.FC = () => {
               <div>
                 <p className="font-sans text-xs text-black/50 mb-1">Case Strength</p>
                 <p className={`font-sans text-sm font-medium ${
-                  predictionRecord.case_strength === 'Strong' ? 'text-green-600' : 
-                  predictionRecord.case_strength === 'Moderate' ? 'text-yellow-600' : 'text-red-600'
+                  predictionRecord.case_strength === 'Strong' ? 'text-red-600' : 
+                  predictionRecord.case_strength === 'Moderate' ? 'text-yellow-600' : 'text-green-600'
                 }`}>
                   {predictionRecord.case_strength || simulationMetadata.Case_Strength || 'N/A'}
                 </p>
