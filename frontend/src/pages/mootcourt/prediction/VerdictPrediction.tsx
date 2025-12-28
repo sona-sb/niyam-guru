@@ -140,7 +140,7 @@ export const VerdictPrediction: React.FC = () => {
     localStorage.removeItem('consumerComplaintFiles');
     localStorage.removeItem('judgeQASession');
     localStorage.removeItem('currentPredictionId');
-    navigate('/');
+    navigate('/my-cases');
   };
 
   if (isLoading) {
@@ -295,13 +295,13 @@ export const VerdictPrediction: React.FC = () => {
                 <h3 className="font-sans text-base font-medium text-black/70 uppercase tracking-wider mb-4">
                   Judgment Findings
                 </h3>
-                <div className="font-serif text-lg leading-relaxed text-black whitespace-pre-wrap">
+                <div className="font-sans text-lg leading-relaxed text-black whitespace-pre-wrap">
                   {judgmentReasoning.Findings}
                 </div>
                 {judgmentReasoning.Liability_Status && (
                   <div className="mt-4 flex items-center gap-2">
                     <span className="font-sans text-sm text-black/60">Liability:</span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    <span className={`px-3 py-1 rounded-lg text-sm font-medium ${
                       judgmentReasoning.Liability_Status === 'Established' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-yellow-100 text-yellow-800'
@@ -319,7 +319,7 @@ export const VerdictPrediction: React.FC = () => {
                 <h3 className="font-sans text-base font-medium text-black/70 uppercase tracking-wider mb-4">
                   Predicted Relief
                 </h3>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <div className="bg-green-100 border border-green-100 rounded-lg p-4 mb-4">
                   <p className="font-sans text-sm font-medium text-green-800 mb-1">
                     {reliefGranted.Primary_Relief.Type}
                   </p>
@@ -342,7 +342,7 @@ export const VerdictPrediction: React.FC = () => {
                       <p className="font-sans text-xs text-black/50 mb-1">Minimum</p>
                       <p className="font-sans text-sm font-medium">{reliefGranted.Total_Compensation_Range.Minimum || predictionRecord.compensation_minimum}</p>
                     </div>
-                    <div className="text-center p-3 bg-green-50 rounded-lg border-2 border-green-200">
+                    <div className="text-center p-3 bg-green-100 rounded-lg border-2 border-green-100">
                       <p className="font-sans text-xs text-green-700 mb-1">Most Likely</p>
                       <p className="font-sans text-sm font-bold text-green-800">{reliefGranted.Total_Compensation_Range.Most_Likely || predictionRecord.compensation_most_likely}</p>
                     </div>
@@ -355,7 +355,7 @@ export const VerdictPrediction: React.FC = () => {
                 
                 {/* Recommended Forum */}
                 {(reliefGranted.Recommended_Forum || predictionRecord.recommended_forum) && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="mt-4 p-3 bg-blue-100 border border-blue-100 rounded-lg">
                     <p className="font-sans text-sm text-blue-700">
                       <span className="font-medium">Recommended Forum:</span> {reliefGranted.Recommended_Forum || predictionRecord.recommended_forum}
                     </p>
