@@ -424,7 +424,12 @@ export const ConsumerComplaintTemplate: React.FC = () => {
         <div className="mb-10">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-black/60 mb-8">
-            <span className="text-gray-500 cursor-pointer hover:underline">Dashboard</span>
+            <span 
+              className="text-gray-500 cursor-pointer hover:underline"
+              onClick={() => navigate('/my-cases')}
+            >
+              Dashboard
+            </span>
             <span>{'>'}</span>
             <span className="font-medium text-black">File New Case</span>
           </div>
@@ -803,7 +808,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                 If there are multiple complainants, add their details here. This section is optional.
               </p>
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-[#EBE3DA] rounded-full flex items-center justify-center mb-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="28"
@@ -856,7 +861,7 @@ export const ConsumerComplaintTemplate: React.FC = () => {
                 If there are multiple opposite parties, add their details here. This section is optional.
               </p>
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-[#EBE3DA] rounded-full flex items-center justify-center mb-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="28"
@@ -1216,23 +1221,58 @@ export const ConsumerComplaintTemplate: React.FC = () => {
               </div>
 
               {/* Upload Progress Summary */}
-              <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Upload Status</h4>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
-                  <div className={`flex items-center gap-1 ${uploadedFiles.find(f => f.category === 'Index') ? 'text-green-600' : 'text-gray-500'}`}>
-                    {uploadedFiles.find(f => f.category === 'Index') ? '✓' : '○'} Index
+              <div className="mt-8 p-5 bg-[#EBE3DA] border border-[#EBEBEB] rounded-xl">
+                <h4 className="font-semibold text-sm uppercase tracking-widest text-black/70 mb-4">Upload Status</h4>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${uploadedFiles.find(f => f.category === 'Index') ? 'bg-green-50 text-green-700' : 'bg-white/60 text-black/50'}`}>
+                    {uploadedFiles.find(f => f.category === 'Index') ? (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <span className="w-4 h-4 rounded-full border-2 border-current" />
+                    )}
+                    <span className="font-medium">Index</span>
                   </div>
-                  <div className={`flex items-center gap-1 ${uploadedFiles.find(f => f.category === 'Proforma') ? 'text-green-600' : 'text-gray-500'}`}>
-                    {uploadedFiles.find(f => f.category === 'Proforma') ? '✓' : '○'} Proforma
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${uploadedFiles.find(f => f.category === 'Proforma') ? 'bg-green-50 text-green-700' : 'bg-white/60 text-black/50'}`}>
+                    {uploadedFiles.find(f => f.category === 'Proforma') ? (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <span className="w-4 h-4 rounded-full border-2 border-current" />
+                    )}
+                    <span className="font-medium">Proforma</span>
                   </div>
-                  <div className={`flex items-center gap-1 ${uploadedFiles.find(f => f.category === 'Synopsis') ? 'text-green-600' : 'text-gray-500'}`}>
-                    {uploadedFiles.find(f => f.category === 'Synopsis') ? '✓' : '○'} Synopsis
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${uploadedFiles.find(f => f.category === 'Synopsis') ? 'bg-green-50 text-green-700' : 'bg-white/60 text-black/50'}`}>
+                    {uploadedFiles.find(f => f.category === 'Synopsis') ? (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <span className="w-4 h-4 rounded-full border-2 border-current" />
+                    )}
+                    <span className="font-medium">Synopsis</span>
                   </div>
-                  <div className={`flex items-center gap-1 ${uploadedFiles.find(f => f.category === 'Memo of Parties') ? 'text-green-600' : 'text-gray-500'}`}>
-                    {uploadedFiles.find(f => f.category === 'Memo of Parties') ? '✓' : '○'} Memo
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${uploadedFiles.find(f => f.category === 'Memo of Parties') ? 'bg-green-50 text-green-700' : 'bg-white/60 text-black/50'}`}>
+                    {uploadedFiles.find(f => f.category === 'Memo of Parties') ? (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <span className="w-4 h-4 rounded-full border-2 border-current" />
+                    )}
+                    <span className="font-medium">Memo</span>
                   </div>
-                  <div className={`flex items-center gap-1 ${uploadedFiles.find(f => f.category === 'Complaint Draft') ? 'text-green-600' : 'text-gray-500'}`}>
-                    {uploadedFiles.find(f => f.category === 'Complaint Draft') ? '✓' : '○'} Complaint
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${uploadedFiles.find(f => f.category === 'Complaint Draft') ? 'bg-green-50 text-green-700' : 'bg-white/60 text-black/50'}`}>
+                    {uploadedFiles.find(f => f.category === 'Complaint Draft') ? (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <span className="w-4 h-4 rounded-full border-2 border-current" />
+                    )}
+                    <span className="font-medium">Complaint</span>
                   </div>
                 </div>
               </div>
