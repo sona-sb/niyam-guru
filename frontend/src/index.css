@@ -33,6 +33,37 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF3E8;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+::-webkit-scrollbar-corner {
+  background: #FAF3E8;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) #FAF3E8;
+}
+
 /* Custom underline offset fix for accurate recreation */
 .underline-offset-custom {
   text-underline-offset: 6px;

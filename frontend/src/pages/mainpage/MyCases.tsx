@@ -52,6 +52,8 @@ export const MyCases: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [editingCase, setEditingCase] = useState<Case | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [newCase, setNewCase] = useState({
     caseName: '',
     complainantName: '',
@@ -118,6 +120,7 @@ export const MyCases: React.FC = () => {
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
+    setEditingCase(null);
     setNewCase({
       caseName: '',
       complainantName: '',
@@ -170,6 +173,86 @@ export const MyCases: React.FC = () => {
       console.error('Error creating case:', err);
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleEditCase = (caseItem: Case, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingCase(caseItem);
+    setNewCase({
+      caseName: caseItem.caseName,
+      complainantName: caseItem.complainantName,
+      oppositePartyName: caseItem.oppositePartyName,
+      filingDate: caseItem.filingDate,
+      status: caseItem.status,
+    });
+    setMenuOpenId(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleUpdateCase = async () => {
+    if (!editingCase || !newCase.caseName || !newCase.complainantName || !newCase.oppositePartyName || !user?.id) {
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const { error } = await supabase
+        .from('user_cases')
+        .update({
+          case_name: newCase.caseName,
+          filing_date: newCase.filingDate,
+          status: newCase.status,
+          complainant_name: newCase.complainantName,
+          opposite_party_name: newCase.oppositePartyName,
+        })
+        .eq('id', editingCase.id);
+
+      if (error) {
+        console.error('Error updating case:', error);
+        return;
+      }
+
+      // Update the case in the list
+      setCases(prev => prev.map(c => 
+        c.id === editingCase.id 
+          ? {
+              ...c,
+              caseName: newCase.caseName,
+              filingDate: newCase.filingDate,
+              status: newCase.status,
+              complainantName: newCase.complainantName,
+              oppositePartyName: newCase.oppositePartyName,
+            }
+          : c
+      ));
+      handleCloseDialog();
+    } catch (err) {
+      console.error('Error updating case:', err);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleDeleteCase = async (caseId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this case?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_cases')
+        .delete()
+        .eq('id', caseId);
+
+      if (error) {
+        console.error('Error deleting case:', error);
+        return;
+      }
+
+      setCases(prev => prev.filter(c => c.id !== caseId));
+      setMenuOpenId(null);
+    } catch (err) {
+      console.error('Error deleting case:', err);
     }
   };
 
@@ -242,7 +325,7 @@ export const MyCases: React.FC = () => {
                 <div
                   key={caseItem.id}
                   onClick={handleCaseClick}
-                  className="group bg-[#FAF3E8] border border-[#EBEBEB] rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="group bg-[#FAF3E8] border border-[#EBEBEB] rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full"
                 >
                   {/* Case Header */}
                   <div className="flex items-start justify-between mb-4">
@@ -254,13 +337,55 @@ export const MyCases: React.FC = () => {
                         {caseItem.caseType}
                       </p>
                     </div>
-                    <span
-                      className={`px-3 py-1 text-xs font-medium rounded-lg border ${getStatusColor(
-                        caseItem.status
-                      )}`}
-                    >
-                      {getStatusLabel(caseItem.status)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-3 py-1 text-xs font-medium rounded-lg border ${getStatusColor(
+                          caseItem.status
+                        )}`}
+                      >
+                        {getStatusLabel(caseItem.status)}
+                      </span>
+                      
+                      {/* 3-dot Menu */}
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuOpenId(menuOpenId === caseItem.id ? null : caseItem.id);
+                          }}
+                          className="p-1 rounded-full hover:bg-black/10 transition-colors"
+                        >
+                          <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="5" r="2" />
+                            <circle cx="12" cy="12" r="2" />
+                            <circle cx="12" cy="19" r="2" />
+                          </svg>
+                        </button>
+                        
+                        {menuOpenId === caseItem.id && (
+                          <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                            <button
+                              onClick={(e) => handleEditCase(caseItem, e)}
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              onClick={(e) => handleDeleteCase(caseItem.id, e)}
+                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Case Details */}
@@ -340,7 +465,7 @@ export const MyCases: React.FC = () => {
                   </div>
 
                   {/* View Details Arrow */}
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-end">
+                  <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-end">
                     <span className="text-sm text-gray-500 group-hover:text-black transition-colors flex items-center gap-1">
                       View Details
                       <svg
@@ -390,7 +515,9 @@ export const MyCases: React.FC = () => {
           
           {/* Dialog */}
           <div className="relative bg-[#FAF3E8] rounded-lg p-8 w-full max-w-md mx-4 shadow-2xl border border-[#EBEBEB]">
-            <h3 className="text-2xl font-semibold text-black mb-6">Register New Case</h3>
+            <h3 className="text-2xl font-semibold text-black mb-6">
+              {editingCase ? 'Edit Case' : 'Register New Case'}
+            </h3>
             
             <div className="space-y-4">
               {/* Case Title */}
@@ -482,17 +609,17 @@ export const MyCases: React.FC = () => {
                 Cancel
               </button>
               <button
-                onClick={handleCreateCase}
+                onClick={editingCase ? handleUpdateCase : handleCreateCase}
                 disabled={!newCase.caseName || !newCase.complainantName || !newCase.oppositePartyName || isCreating}
                 className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isCreating ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Creating...
+                    {editingCase ? 'Updating...' : 'Creating...'}
                   </>
                 ) : (
-                  'Create Case'
+                  editingCase ? 'Update Case' : 'Create Case'
                 )}
               </button>
             </div>
