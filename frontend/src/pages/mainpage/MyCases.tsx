@@ -363,7 +363,7 @@ export const MyCases: React.FC = () => {
                         </button>
                         
                         {menuOpenId === caseItem.id && (
-                          <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                          <div className="absolute right-0 top-full mt-1 w-32 bg-[#FAF3E8] rounded-lg shadow-lg border border-[#EBEBEB] py-1 z-20">
                             <button
                               onClick={(e) => handleEditCase(caseItem, e)}
                               className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"

@@ -74,29 +74,40 @@ When you are ready, file your complaint.`;
     canvas.height = 664;
     const ctx = canvas.getContext('2d')!;
     
-    // Paper background with subtle grain
-    ctx.fillStyle = '#f0ede8';
+    // Warm cream/beige paper background with more yellow tone
+    ctx.fillStyle = '#f7e8ce';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Add subtle paper texture/noise
+    // Add pixelated paper texture (blocky noise for pixel aesthetic)
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      const noise = (Math.random() - 0.5) * 8;
-      imageData.data[i] += noise;
-      imageData.data[i + 1] += noise;
-      imageData.data[i + 2] += noise;
+    const pixelSize = 4; // Larger pixel blocks for more visible retro effect
+    for (let y = 0; y < canvas.height; y += pixelSize) {
+      for (let x = 0; x < canvas.width; x += pixelSize) {
+        const noise = (Math.random() - 0.5) * 12;
+        // Apply noise to entire pixel block
+        for (let py = 0; py < pixelSize && y + py < canvas.height; py++) {
+          for (let px = 0; px < pixelSize && x + px < canvas.width; px++) {
+            const i = ((y + py) * canvas.width + (x + px)) * 4;
+            imageData.data[i] += noise;
+            imageData.data[i + 1] += noise;
+            imageData.data[i + 2] += noise;
+          }
+        }
+      }
     }
     ctx.putImageData(imageData, 0, 0);
     
-    // Document border
-    ctx.strokeStyle = '#d0ccc5';
-    ctx.lineWidth = 2;
+    // Outer golden/tan border (matching the image)
+    ctx.strokeStyle = '#c9a961';
+    ctx.lineWidth = 3;
     ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
     
-    // Inner border line
-    ctx.strokeStyle = '#e0dcd5';
+    // Inner dashed border line (matching the image)
+    ctx.strokeStyle = '#d4b776';
     ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
     ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+    ctx.setLineDash([]);
     
     // Header area
     ctx.fillStyle = '#2c2c2c';
@@ -204,7 +215,12 @@ When you are ready, file your complaint.`;
     ctx.textAlign = 'right';
     ctx.fillText('DOC-2025-CC-0001', canvas.width - 40, canvas.height - 35);
     
-    return new THREE.CanvasTexture(canvas);
+    const texture = new THREE.CanvasTexture(canvas);
+    // Disable texture filtering for crisp pixel look
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.generateMipmaps = false;
+    return texture;
   };
 
   const lerp = (start: number, end: number, factor: number) => {
@@ -592,7 +608,7 @@ When you are ready, file your complaint.`;
               left: '50%',
               transform: 'translateX(-50%)',
               fontSize: '13px',
-              fontFamily: 'Georgia, serif',
+              fontFamily: '"Jersey 25", sans-serif',
               color: '#9a9a9a',
               letterSpacing: '0.5px',
               animation: 'fadeIn 1s ease 2s both'
@@ -607,7 +623,7 @@ When you are ready, file your complaint.`;
               whiteSpace: 'pre-wrap',
               fontSize: '19px',
               lineHeight: 1.75,
-              fontFamily: 'Georgia, serif',
+              fontFamily: '"Jersey 25", sans-serif',
               color: '#2c2c2c',
               letterSpacing: '0.01em'
             }}
@@ -642,7 +658,7 @@ When you are ready, file your complaint.`;
                 }}
                 style={{
                   fontSize: '16px',
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: '"Jersey 25", sans-serif',
                   color: '#5a5a5a',
                   cursor: 'pointer',
                   letterSpacing: '0.8px',

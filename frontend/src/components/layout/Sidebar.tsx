@@ -64,10 +64,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {showPopup && (
           <div 
             ref={popupRef}
-            className="absolute bottom-0 left-full ml-3 w-56 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
+            className="absolute bottom-0 left-full ml-3 w-56 bg-[#FAF3E8] rounded-lg shadow-lg border border-[#EBEBEB] overflow-hidden"
           >
             {/* User Info */}
-            <div className="px-4 py-3 border-b border-gray-100">
+            <div className="px-4 py-3 border-b border-black/10">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-linear-to-br from-orange-200 to-orange-300 flex items-center justify-center text-sm font-semibold text-orange-900">
                   {displayInitial}

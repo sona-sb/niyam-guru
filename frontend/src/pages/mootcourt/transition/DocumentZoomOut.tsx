@@ -433,7 +433,7 @@ export const DocumentZoomOut: React.FC = () => {
     if (!containerRef.current) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf8f8f8);
+    // No background - let CSS background show through
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(
@@ -446,7 +446,11 @@ export const DocumentZoomOut: React.FC = () => {
     camera.lookAt(0, 0, -1);
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: true,
+      alpha: true // Enable transparency
+    });
+    renderer.setClearColor(0x000000, 0); // Transparent background
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
@@ -572,14 +576,6 @@ export const DocumentZoomOut: React.FC = () => {
           const fadePhase = t / 0.15;
           const fadeEased = easeOutCubic(fadePhase);
 
-          if (scene.background instanceof THREE.Color) {
-            scene.background.setRGB(
-              lerp(1, 0.973, fadeEased),
-              lerp(1, 0.973, fadeEased),
-              lerp(1, 0.973, fadeEased)
-            );
-          }
-
           frontMaterial.emissive.setRGB(
             lerp(0.5, 0, fadeEased),
             lerp(0.5, 0, fadeEased),
@@ -679,7 +675,7 @@ export const DocumentZoomOut: React.FC = () => {
         margin: 0,
         padding: 0,
         overflow: 'hidden',
-        background: '#f8f8f8'
+        background: 'url(/media/courtroom_bg.png) center/cover no-repeat'
       }}
     />
   );
