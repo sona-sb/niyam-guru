@@ -257,7 +257,7 @@ export const MyCases: React.FC = () => {
   };
 
   const handleCaseClick = () => {
-    navigate('/mootcourt/intro');
+    navigate('/voice-input');
   };
 
   return (

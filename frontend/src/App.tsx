@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { HomePage } from './pages/Home/HomePage';
 import { LoginPage } from './pages/Auth/LoginPage';
 import { MyCases } from './pages/mainpage/MyCases';
+import { VoiceInput } from './pages/voice/VoiceInput';
 import { DocumentIntro } from './pages/mootcourt/intro/DocumentIntro';
 import { ConsumerComplaintTemplate } from './pages/mootcourt/template/ConsumerComplaintTemplate';
 import { ComplaintPreview } from './pages/mootcourt/preview/ComplaintPreview';
@@ -22,6 +23,11 @@ const App: React.FC = () => {
           <Route path="/my-cases" element={
             <ProtectedRoute>
               <MyCases />
+            </ProtectedRoute>
+          } />
+          <Route path="/voice-input" element={
+            <ProtectedRoute>
+              <VoiceInput />
             </ProtectedRoute>
           } />
           <Route path="/mootcourt/intro" element={
