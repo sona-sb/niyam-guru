@@ -36,5 +36,12 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "https://hocixcxbpmzncblhqxqk.supabase.
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")  # Use service role key for backend
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")  # Anon key for client operations
 
+# Sarvam AI (Voice Processing)
+SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")
+
+# Gmail API (OAuth2 via LangChain GmailToolkit)
+GMAIL_CREDENTIALS_FILE = os.getenv("GMAIL_CREDENTIALS_FILE", str(BASE_DIR / "credentials.json"))
+GMAIL_TOKEN_FILE = os.getenv("GMAIL_TOKEN_FILE", str(BASE_DIR / "token.json"))
+
 # Misc app options
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"

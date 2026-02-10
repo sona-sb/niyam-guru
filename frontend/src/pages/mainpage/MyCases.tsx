@@ -169,6 +169,9 @@ export const MyCases: React.FC = () => {
 
       setCases(prev => [createdCase, ...prev]);
       handleCloseDialog();
+
+      // Navigate to voice input to collect first transcript
+      navigate(`/voice-input/${data.id}`);
     } catch (err) {
       console.error('Error creating case:', err);
     } finally {
@@ -256,8 +259,8 @@ export const MyCases: React.FC = () => {
     }
   };
 
-  const handleCaseClick = () => {
-    navigate('/voice-input');
+  const handleCaseClick = (caseId: string) => {
+    navigate(`/chat/${caseId}`);
   };
 
   return (
@@ -324,7 +327,7 @@ export const MyCases: React.FC = () => {
               {cases.map((caseItem) => (
                 <div
                   key={caseItem.id}
-                  onClick={handleCaseClick}
+                  onClick={() => handleCaseClick(caseItem.id)}
                   className="group bg-[#FAF3E8] border border-[#EBEBEB] rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full"
                 >
                   {/* Case Header */}

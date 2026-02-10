@@ -12,6 +12,7 @@ import { ComplaintPreview } from './pages/mootcourt/preview/ComplaintPreview';
 import { DocumentZoomOut } from './pages/mootcourt/transition/DocumentZoomOut';
 import { JudgeQuestions } from './pages/mootcourt/questions/JudgeQuestions';
 import { VerdictPrediction } from './pages/mootcourt/prediction/VerdictPrediction';
+import { ChatInterface } from './pages/chat/ChatInterface';
 
 const App: React.FC = () => {
   return (
@@ -28,6 +29,21 @@ const App: React.FC = () => {
           <Route path="/voice-input" element={
             <ProtectedRoute>
               <VoiceInput />
+            </ProtectedRoute>
+          } />
+          <Route path="/voice-input/:caseId" element={
+            <ProtectedRoute>
+              <VoiceInput />
+            </ProtectedRoute>
+          } />
+          <Route path="/chat" element={
+            <ProtectedRoute>
+              <ChatInterface />
+            </ProtectedRoute>
+          } />
+          <Route path="/chat/:caseId" element={
+            <ProtectedRoute>
+              <ChatInterface />
             </ProtectedRoute>
           } />
           <Route path="/mootcourt/intro" element={

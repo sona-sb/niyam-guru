@@ -16,6 +16,9 @@ from .settings import (
     SUPABASE_URL,
     SUPABASE_KEY,
     SUPABASE_ANON_KEY,
+    SARVAM_API_KEY,
+    GMAIL_CREDENTIALS_FILE,
+    GMAIL_TOKEN_FILE,
     DEBUG,
 )
 
@@ -36,5 +39,8 @@ __all__ = [
     "SUPABASE_URL",
     "SUPABASE_KEY",
     "SUPABASE_ANON_KEY",
+    "SARVAM_API_KEY",
+    "GMAIL_CREDENTIALS_FILE",
+    "GMAIL_TOKEN_FILE",
     "DEBUG",
 ]
