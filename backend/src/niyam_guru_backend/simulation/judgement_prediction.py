@@ -168,6 +168,532 @@ class ConsumerComplaintData:
 CPA_2019_PDF_PATH = DATA_DIR / "laws" / "cpa2019.pdf"
 
 
+# ========== Validation & Contradiction Detection ==========
+
+# Required document categories that a real consumer court expects
+MANDATORY_FILING_DOCUMENTS = [
+    "Index/List of Documents",
+    "Complaint Proforma",
+    "Affidavit/Verification",
+]
+
+EVIDENCE_DOCUMENT_CATEGORIES = [
+    "Purchase Receipt/Invoice",
+    "Product Photos",
+    "Communication Records",
+    "Warranty/Guarantee Card",
+    "Medical Report",
+    "Expert/Technical Report",
+    "Bank Statement/Payment Proof",
+]
+
+
+@dataclass
+class ValidationIssue:
+    """A single validation finding."""
+    category: str          # "missing_field" | "missing_document" | "contradiction" | "weak_detail"
+    severity: str          # "critical" | "major" | "minor"
+    field: str             # Which field / document this relates to
+    message: str           # Human-readable explanation
+    confidence_penalty: int  # Suggested percentage-point penalty (0-25)
+
+
+@dataclass
+class ValidationReport:
+    """Complete validation report for a complaint."""
+    issues: List[ValidationIssue]
+    completeness_score: float           # 0.0–1.0
+    document_score: float               # 0.0–1.0
+    contradiction_score: float          # 0.0 = no contradictions, higher = worse
+    max_confidence_cap: int             # Hard ceiling on confidence %
+    total_penalty: int                  # Sum of all penalties (capped at 70)
+    summary: str                        # One-paragraph text summary for prompt injection
+
+
+def _is_empty(val: str) -> bool:
+    """Check if a string value is effectively empty."""
+    return not val or not val.strip() or val.strip().lower() in ("n/a", "na", "none", "nil", "-", "0")
+
+
+def _parse_amount(val: str) -> Optional[float]:
+    """Try to parse an amount string into a float."""
+    if _is_empty(val):
+        return None
+    import re
+    cleaned = re.sub(r'[₹,\s]', '', val.replace("Rs.", "").replace("Rs", "").replace("INR", ""))
+    try:
+        return float(cleaned)
+    except ValueError:
+        return None
+
+
+def _parse_date(val: str) -> Optional[datetime]:
+    """Try parsing a date string."""
+    if _is_empty(val):
+        return None
+    from dateutil import parser as dateparser
+    try:
+        return dateparser.parse(val)
+    except Exception:
+        return None
+
+
+def validate_complaint_data(complaint_data: ConsumerComplaintData) -> ValidationReport:
+    """
+    Validate the complaint data for completeness, contradictions, and evidence strength.
+
+    This runs BEFORE the LLM call so the results can be injected into the prompt
+    and also applied as hard-cap adjustments AFTER the LLM responds.
+    """
+    issues: List[ValidationIssue] = []
+
+    c = complaint_data.complainant
+    op = complaint_data.opposite_party
+    cd = complaint_data.case_details
+    tx = complaint_data.transaction
+    gr = complaint_data.grievance
+    pc = complaint_data.prior_communication
+    docs = complaint_data.documents
+
+    # ── 1. Complainant completeness ──────────────────────────────────────
+    complainant_fields = {
+        "name": c.name,
+        "address": c.address,
+    }
+    complainant_optional = {
+        "phone": c.phone,
+        "email": c.email,
+        "age": c.age,
+    }
+    for fname, fval in complainant_fields.items():
+        if _is_empty(fval):
+            issues.append(ValidationIssue(
+                category="missing_field", severity="critical",
+                field=f"complainant.{fname}",
+                message=f"Complainant {fname} is missing — this is a mandatory filing requirement.",
+                confidence_penalty=8,
+            ))
+    for fname, fval in complainant_optional.items():
+        if _is_empty(fval):
+            issues.append(ValidationIssue(
+                category="missing_field", severity="minor",
+                field=f"complainant.{fname}",
+                message=f"Complainant {fname} not provided — weakens identity verification.",
+                confidence_penalty=2,
+            ))
+
+    # ── 2. Opposite party completeness ───────────────────────────────────
+    if _is_empty(op.name):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="critical",
+            field="opposite_party.name",
+            message="Opposite party name is missing — complaint cannot proceed without identifying the respondent.",
+            confidence_penalty=12,
+        ))
+    if _is_empty(op.address):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="major",
+            field="opposite_party.address",
+            message="Opposite party address is missing — service of notice may fail.",
+            confidence_penalty=5,
+        ))
+
+    # ── 3. Case details ──────────────────────────────────────────────────
+    if _is_empty(cd.case_category):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="major",
+            field="case_details.case_category",
+            message="Case category not specified — jurisdiction determination is unclear.",
+            confidence_penalty=5,
+        ))
+    if _is_empty(cd.claim_consideration):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="critical",
+            field="case_details.claim_consideration",
+            message="No claim amount specified — compensation prediction cannot be accurate.",
+            confidence_penalty=10,
+        ))
+    if _is_empty(cd.date_of_cause_of_action):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="major",
+            field="case_details.date_of_cause_of_action",
+            message="Date of cause of action missing — limitation period cannot be verified.",
+            confidence_penalty=6,
+        ))
+
+    # ── 4. Transaction details ───────────────────────────────────────────
+    if _is_empty(tx.product_service_description):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="critical",
+            field="transaction.product_service_description",
+            message="Product/service description is empty — the core subject matter of the complaint is unknown.",
+            confidence_penalty=10,
+        ))
+    if _is_empty(tx.purchase_amount) and _is_empty(cd.paid_as_consideration):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="major",
+            field="transaction.purchase_amount",
+            message="Purchase amount not provided — damages calculation has no baseline.",
+            confidence_penalty=6,
+        ))
+    if _is_empty(tx.purchase_date):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="minor",
+            field="transaction.purchase_date",
+            message="Purchase date not provided — timeline of events is incomplete.",
+            confidence_penalty=3,
+        ))
+
+    # ── 5. Grievance details ─────────────────────────────────────────────
+    if _is_empty(gr.grievance_description):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="critical",
+            field="grievance.grievance_description",
+            message="Grievance description is empty — the complaint has no substance without describing what went wrong.",
+            confidence_penalty=15,
+        ))
+    elif len(gr.grievance_description.strip()) < 50:
+        issues.append(ValidationIssue(
+            category="weak_detail", severity="major",
+            field="grievance.grievance_description",
+            message=f"Grievance description is very brief ({len(gr.grievance_description.strip())} chars) — insufficient detail for legal analysis.",
+            confidence_penalty=8,
+        ))
+
+    if _is_empty(gr.deficiency_type):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="major",
+            field="grievance.deficiency_type",
+            message="Deficiency type not specified — categorization of the legal claim is unclear.",
+            confidence_penalty=4,
+        ))
+
+    # ── 6. Relief sought ─────────────────────────────────────────────────
+    if _is_empty(complaint_data.relief_sought):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="major",
+            field="relief_sought",
+            message="Relief sought is not specified — the court needs to know what the complainant is asking for.",
+            confidence_penalty=6,
+        ))
+
+    # ── 7. Prior communication ───────────────────────────────────────────
+    if _is_empty(pc.prior_complaint_date) and _is_empty(pc.prior_complaint_details):
+        issues.append(ValidationIssue(
+            category="missing_field", severity="minor",
+            field="prior_communication",
+            message="No prior communication with opposite party recorded — courts view this unfavorably.",
+            confidence_penalty=3,
+        ))
+
+    # ── 8. Document checks ───────────────────────────────────────────────
+    uploaded_categories = [d.category.strip().lower() for d in docs] if docs else []
+
+    # 8a. Mandatory filing documents
+    for req_doc in MANDATORY_FILING_DOCUMENTS:
+        if not any(req_doc.lower() in cat for cat in uploaded_categories):
+            issues.append(ValidationIssue(
+                category="missing_document", severity="critical",
+                field=f"documents.{req_doc}",
+                message=f"Required filing document '{req_doc}' not uploaded — case may be rejected at filing stage.",
+                confidence_penalty=8,
+            ))
+
+    # 8b. No evidence documents at all
+    has_any_evidence = any(
+        any(ev.lower() in cat for ev in EVIDENCE_DOCUMENT_CATEGORIES)
+        for cat in uploaded_categories
+    )
+    if not has_any_evidence and len(docs) == 0:
+        issues.append(ValidationIssue(
+            category="missing_document", severity="critical",
+            field="documents.evidence",
+            message="No supporting evidence documents uploaded (bills, photos, communications, etc.) — case relies entirely on oral assertions which are weak in consumer courts.",
+            confidence_penalty=15,
+        ))
+    elif not has_any_evidence:
+        issues.append(ValidationIssue(
+            category="missing_document", severity="major",
+            field="documents.evidence",
+            message="Uploaded documents don't include purchase receipts, communication records, or photos — evidentiary support is weak.",
+            confidence_penalty=10,
+        ))
+
+    # 8c. Purchase receipt / invoice specifically
+    if not any("receipt" in cat or "invoice" in cat or "bill" in cat for cat in uploaded_categories):
+        if not _is_empty(tx.purchase_amount) or not _is_empty(cd.paid_as_consideration):
+            issues.append(ValidationIssue(
+                category="missing_document", severity="major",
+                field="documents.purchase_receipt",
+                message="Claimed a purchase amount but no purchase receipt/invoice uploaded — the amount cannot be verified.",
+                confidence_penalty=7,
+            ))
+
+    # ── 9. Contradiction detection ───────────────────────────────────────
+    # 9a. Claim amount vs purchase amount
+    claim_amt = _parse_amount(cd.claim_consideration)
+    purchase_amt = _parse_amount(tx.purchase_amount) or _parse_amount(cd.paid_as_consideration)
+
+    if claim_amt is not None and purchase_amt is not None:
+        if claim_amt > purchase_amt * 10:
+            issues.append(ValidationIssue(
+                category="contradiction", severity="critical",
+                field="claim_vs_purchase_amount",
+                message=f"Claim amount (₹{claim_amt:,.0f}) is more than 10× the purchase amount (₹{purchase_amt:,.0f}) — needs strong justification for consequential damages.",
+                confidence_penalty=12,
+            ))
+        elif claim_amt > purchase_amt * 5:
+            issues.append(ValidationIssue(
+                category="contradiction", severity="major",
+                field="claim_vs_purchase_amount",
+                message=f"Claim amount (₹{claim_amt:,.0f}) is significantly higher than purchase amount (₹{purchase_amt:,.0f}) — may be viewed as excessive without supporting evidence.",
+                confidence_penalty=7,
+            ))
+        elif claim_amt < purchase_amt * 0.1:
+            issues.append(ValidationIssue(
+                category="contradiction", severity="minor",
+                field="claim_vs_purchase_amount",
+                message=f"Claim amount (₹{claim_amt:,.0f}) is unusually low relative to purchase amount (₹{purchase_amt:,.0f}) — may indicate incomplete relief sought.",
+                confidence_penalty=2,
+            ))
+
+    # 9b. Date contradictions
+    purchase_date = _parse_date(tx.purchase_date)
+    deficiency_date = _parse_date(gr.date_of_deficiency)
+    cause_date = _parse_date(cd.date_of_cause_of_action)
+
+    if purchase_date and deficiency_date and deficiency_date < purchase_date:
+        issues.append(ValidationIssue(
+            category="contradiction", severity="critical",
+            field="dates.deficiency_before_purchase",
+            message=f"Deficiency date ({gr.date_of_deficiency}) is BEFORE the purchase date ({tx.purchase_date}) — this is logically impossible and severely undermines credibility.",
+            confidence_penalty=20,
+        ))
+
+    if purchase_date and cause_date and cause_date < purchase_date:
+        issues.append(ValidationIssue(
+            category="contradiction", severity="major",
+            field="dates.cause_before_purchase",
+            message=f"Date of cause of action ({cd.date_of_cause_of_action}) is before the purchase date ({tx.purchase_date}) — timeline inconsistency.",
+            confidence_penalty=12,
+        ))
+
+    # 9c. Limitation period check (2 years under CPA 2019)
+    if cause_date:
+        days_since = (datetime.now() - cause_date).days
+        if days_since > 730:  # > 2 years
+            issues.append(ValidationIssue(
+                category="contradiction", severity="critical",
+                field="dates.limitation_period",
+                message=f"Cause of action was {days_since} days ago (~{days_since//365} years) — exceeds the 2-year limitation period under Section 69(1) of CPA 2019. Case may be time-barred.",
+                confidence_penalty=20,
+            ))
+        elif days_since > 600:
+            issues.append(ValidationIssue(
+                category="contradiction", severity="major",
+                field="dates.limitation_approaching",
+                message=f"Cause of action was {days_since} days ago — approaching the 2-year limitation period.",
+                confidence_penalty=5,
+            ))
+
+    # 9d. Grievance type vs category mismatch (basic check)
+    if not _is_empty(gr.deficiency_type) and not _is_empty(cd.case_category):
+        # Check for obvious mismatches
+        deficiency_lower = gr.deficiency_type.lower()
+        category_lower = cd.case_category.lower()
+        mismatch_pairs = [
+            (["medical", "health", "hospital", "doctor"], ["electronics", "mobile", "appliance", "vehicle"]),
+            (["banking", "loan", "credit", "insurance"], ["food", "restaurant", "hotel"]),
+        ]
+        for deficiency_keywords, category_keywords in mismatch_pairs:
+            if any(k in deficiency_lower for k in deficiency_keywords) and any(k in category_lower for k in category_keywords):
+                issues.append(ValidationIssue(
+                    category="contradiction", severity="major",
+                    field="category_vs_deficiency_type",
+                    message=f"Deficiency type '{gr.deficiency_type}' appears inconsistent with case category '{cd.case_category}' — may indicate incorrect form filling.",
+                    confidence_penalty=10,
+                ))
+                break
+
+    # ── Compute aggregate scores ─────────────────────────────────────────
+    # Completeness: count of filled critical fields
+    all_critical_fields = [
+        c.name, c.address, op.name, cd.claim_consideration,
+        tx.product_service_description, gr.grievance_description,
+        cd.case_category, complaint_data.relief_sought,
+    ]
+    filled = sum(1 for f in all_critical_fields if not _is_empty(f))
+    completeness_score = filled / len(all_critical_fields) if all_critical_fields else 0.0
+
+    # Document score
+    required_doc_count = len(MANDATORY_FILING_DOCUMENTS) + 1  # +1 for at least some evidence
+    found_doc_count = min(len(docs), required_doc_count) if docs else 0
+    document_score = found_doc_count / required_doc_count if required_doc_count > 0 else 0.0
+
+    # Contradiction score (0 = clean, higher = worse)
+    contradictions = [i for i in issues if i.category == "contradiction"]
+    contradiction_score = sum(i.confidence_penalty for i in contradictions) / 100.0
+
+    # Total penalty (capped at 70 — never knock confidence to below ~30%)
+    total_penalty = min(70, sum(i.confidence_penalty for i in issues))
+
+    # Hard confidence caps based on objective criteria
+    max_cap = 95
+    if completeness_score < 0.4:
+        max_cap = min(max_cap, 35)
+    elif completeness_score < 0.6:
+        max_cap = min(max_cap, 50)
+    elif completeness_score < 0.8:
+        max_cap = min(max_cap, 70)
+
+    if document_score == 0.0:
+        max_cap = min(max_cap, 45)
+    elif document_score < 0.5:
+        max_cap = min(max_cap, 60)
+
+    if contradiction_score > 0.3:
+        max_cap = min(max_cap, 30)
+    elif contradiction_score > 0.15:
+        max_cap = min(max_cap, 50)
+    elif contradiction_score > 0.0:
+        max_cap = min(max_cap, 70)
+
+    # Build summary for prompt injection
+    critical_issues = [i for i in issues if i.severity == "critical"]
+    major_issues = [i for i in issues if i.severity == "major"]
+    minor_issues = [i for i in issues if i.severity == "minor"]
+
+    summary_parts = []
+    summary_parts.append(f"FORM COMPLETENESS: {completeness_score:.0%} of critical fields filled.")
+    summary_parts.append(f"DOCUMENT SCORE: {document_score:.0%} of required documents uploaded.")
+    summary_parts.append(f"ISSUES FOUND: {len(critical_issues)} CRITICAL, {len(major_issues)} MAJOR, {len(minor_issues)} MINOR.")
+
+    if contradictions:
+        summary_parts.append("CONTRADICTIONS DETECTED:")
+        for cont in contradictions:
+            summary_parts.append(f"  ⚠ {cont.message}")
+
+    if critical_issues:
+        summary_parts.append("CRITICAL GAPS:")
+        for ci in critical_issues:
+            if ci.category != "contradiction":
+                summary_parts.append(f"  ✗ {ci.message}")
+
+    if major_issues:
+        summary_parts.append("MAJOR GAPS:")
+        for mi in major_issues:
+            if mi.category != "contradiction":
+                summary_parts.append(f"  ⚠ {mi.message}")
+
+    summary_parts.append(f"MAXIMUM CONFIDENCE CEILING: {max_cap}% — confidence scores MUST NOT exceed this value.")
+
+    summary = "\n".join(summary_parts)
+
+    return ValidationReport(
+        issues=issues,
+        completeness_score=completeness_score,
+        document_score=document_score,
+        contradiction_score=contradiction_score,
+        max_confidence_cap=max_cap,
+        total_penalty=total_penalty,
+        summary=summary,
+    )
+
+
+def apply_confidence_adjustments(json_response: dict, validation: ValidationReport) -> dict:
+    """
+    Post-LLM adjustment: enforce hard caps and inject validation metadata
+    into the prediction response so the frontend can display warnings.
+    """
+    import re as _re
+
+    def _extract_pct(val: str) -> Optional[int]:
+        """Extract a percentage number from a string like '85%' or '78% [70-85]'."""
+        if not val:
+            return None
+        m = _re.search(r'(\d+)\s*%', str(val))
+        return int(m.group(1)) if m else None
+
+    def _cap_pct_string(original: str, cap: int) -> str:
+        """Cap a percentage string."""
+        pct = _extract_pct(original)
+        if pct is None:
+            return original
+        capped = min(pct, cap)
+        return str(original).replace(str(pct), str(capped))
+
+    cap = validation.max_confidence_cap
+
+    # Cap Judgment_Reasoning.Liability_Confidence
+    jr = json_response.get("Judgment_Reasoning", {})
+    if jr.get("Liability_Confidence"):
+        jr["Liability_Confidence"] = _cap_pct_string(jr["Liability_Confidence"], cap)
+
+    # Cap Simulation_Metadata.Success_Probability
+    sm = json_response.get("Simulation_Metadata", {})
+    if sm.get("Success_Probability"):
+        sm["Success_Probability"] = _cap_pct_string(sm["Success_Probability"], cap)
+
+    # Cap individual Predicted_Outcomes confidences
+    rg = json_response.get("Relief_Granted", {})
+    for outcome in rg.get("Predicted_Outcomes", []):
+        if outcome.get("Confidence"):
+            outcome["Confidence"] = _cap_pct_string(outcome["Confidence"], cap)
+
+    # Adjust Case_Strength if confidence is low
+    if cap <= 35:
+        sm["Case_Strength"] = "Weak"
+    elif cap <= 50:
+        if sm.get("Case_Strength") == "Strong":
+            sm["Case_Strength"] = "Moderate"
+
+    # Inject validation metadata for frontend consumption
+    json_response["_validation"] = {
+        "completeness_score": round(validation.completeness_score, 2),
+        "document_score": round(validation.document_score, 2),
+        "contradiction_score": round(validation.contradiction_score, 2),
+        "max_confidence_cap": validation.max_confidence_cap,
+        "total_penalty_points": validation.total_penalty,
+        "issues": [
+            {
+                "category": i.category,
+                "severity": i.severity,
+                "field": i.field,
+                "message": i.message,
+                "confidence_penalty": i.confidence_penalty,
+            }
+            for i in validation.issues
+        ],
+        "contradictions": [
+            {
+                "field": i.field,
+                "message": i.message,
+                "severity": i.severity,
+                "penalty": i.confidence_penalty,
+            }
+            for i in validation.issues if i.category == "contradiction"
+        ],
+        "missing_documents": [
+            {
+                "document": i.field.replace("documents.", ""),
+                "message": i.message,
+                "severity": i.severity,
+            }
+            for i in validation.issues if i.category == "missing_document"
+        ],
+        "missing_fields": [
+            {
+                "field": i.field,
+                "message": i.message,
+                "severity": i.severity,
+            }
+            for i in validation.issues if i.category == "missing_field"
+        ],
+    }
+
+    return json_response
+
+
 # ========== Document Processing Functions ==========
 
 def prepare_multimodal_content(documents: List[UploadedDocument]) -> List[dict]:
@@ -392,7 +918,7 @@ def get_vectorstore():
     return vectorstore
 
 
-def get_qa_chain(vectorstore, cpa_context: str = ""):
+def get_qa_chain(vectorstore, cpa_context: str = "", validation_summary: str = ""):
     """Create and return the QA chain with JSON-formatted legal judgment prompt."""
     
     # Create a retriever from the loaded vector store
@@ -421,6 +947,22 @@ remedies, and procedures. Quote specific sections when relevant.
 ═══════════════════════════════════════════════════════════════════════════════
 """
     
+    # Build the validation section
+    validation_section = ""
+    if validation_summary:
+        validation_section = f"""
+═══════════════════════════════════════════════════════════════════════════════
+                    PRE-ANALYSIS VALIDATION REPORT
+═══════════════════════════════════════════════════════════════════════════════
+
+The following automated validation was performed on the complaint data BEFORE
+your analysis. You MUST account for these findings in your confidence scores.
+
+{validation_summary}
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+    
     # Custom prompt template for legal judgment prediction with JSON output
     legal_judgment_prompt = PromptTemplate(
         input_variables=["context", "question"],
@@ -441,6 +983,7 @@ and format your response as a detailed JSON structure for a courtroom simulation
 
 {question}
 
+''' + validation_section + '''
 ═══════════════════════════════════════════════════════════════════════════════
                     INSTRUCTIONS
 ═══════════════════════════════════════════════════════════════════════════════
@@ -450,6 +993,45 @@ and format your response as a detailed JSON structure for a courtroom simulation
 3. Quote the exact text of relevant sections where appropriate.
 4. Compare with similar past cases from the database.
 5. Provide a detailed judgment prediction.
+
+═══════════════════════════════════════════════════════════════════════════════
+                    STRICT CONFIDENCE SCORING RULES
+═══════════════════════════════════════════════════════════════════════════════
+
+You MUST follow these rules when assigning Liability_Confidence, Success_Probability,
+and all Predicted_Outcomes Confidence values:
+
+A) OBSERVE THE MAXIMUM CONFIDENCE CEILING in the validation report above.
+   Your confidence numbers must NEVER exceed that ceiling.
+
+B) MISSING INFORMATION PENALTIES (cumulative):
+   - Each missing critical field (name, address, grievance, claim amount): −8-15%
+   - Each missing major field (dates, category, relief sought): −4-6%
+   - Missing grievance description entirely: confidence CANNOT exceed 30%
+   - Very brief grievance description (<50 chars): confidence CANNOT exceed 55%
+
+C) MISSING DOCUMENT PENALTIES:
+   - No documents uploaded at all: confidence CANNOT exceed 45%
+   - Missing mandatory filing docs (index, proforma, affidavit): −8% each
+   - No purchase receipt when an amount is claimed: −7%
+   - No supporting evidence (photos, communications): −10%
+
+D) CONTRADICTION PENALTIES:
+   - Date contradictions (deficiency before purchase): confidence CANNOT exceed 25%
+   - Claim >10× purchase amount without justification: −12%
+   - Category/deficiency type mismatch: −10%
+   - Limitation period exceeded (>2 years): confidence CANNOT exceed 20%
+
+E) BASELINE SCORING:
+   - A fully complete case with all documents and no contradictions: 75-90%
+   - A complete case but missing some supporting docs: 55-75%
+   - A partially complete case with key gaps: 30-55%
+   - A case with contradictions or minimal info: 15-35%
+
+F) EXPLICITLY LIST every contradiction, missing field, and missing document
+   in the Evidence_Analysis.Critical_Gaps array. Do NOT gloss over them.
+
+═══════════════════════════════════════════════════════════════════════════════
 
 Analyze the case thoroughly and respond with ONLY a valid JSON object (no markdown, no code blocks, just raw JSON).
 The JSON must follow this exact structure:
@@ -687,6 +1269,7 @@ def run_multimodal_prediction(
     documents: List[UploadedDocument],
     cpa_context: str,
     similar_cases_context: str,
+    validation_summary: str = "",
 ) -> str:
     """
     Run a multimodal prediction with documents passed directly to Gemini.
@@ -696,6 +1279,7 @@ def run_multimodal_prediction(
         documents: List of uploaded documents (PDFs, images)
         cpa_context: Consumer Protection Act 2019 context
         similar_cases_context: Similar cases retrieved from vector store
+        validation_summary: Pre-LLM validation report summary
         
     Returns:
         The LLM response as a string
@@ -723,6 +1307,22 @@ remedies, and procedures. Quote specific sections when relevant.
 ═══════════════════════════════════════════════════════════════════════════════
 """
     
+    # Build validation section for prompt
+    validation_section = ""
+    if validation_summary:
+        validation_section = f"""
+═══════════════════════════════════════════════════════════════════════════════
+                    PRE-ANALYSIS VALIDATION REPORT
+═══════════════════════════════════════════════════════════════════════════════
+
+The following automated validation was performed on the complaint data BEFORE
+your analysis. You MUST account for these findings in your confidence scores.
+
+{validation_summary}
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
     # Build the complete prompt
     full_prompt = f'''You are an expert legal analyst specializing in Indian Consumer Protection law.
 Your task is to analyze the user's case, predict the likely legal outcome based on similar past cases,
@@ -741,6 +1341,7 @@ and format your response as a detailed JSON structure for a courtroom simulation
 
 {text_query}
 
+{validation_section}
 ═══════════════════════════════════════════════════════════════════════════════
                     ATTACHED DOCUMENTS
 ═══════════════════════════════════════════════════════════════════════════════
@@ -763,6 +1364,45 @@ Please carefully analyze these documents as evidence for the case. They may cont
 4. Quote the exact text of relevant sections where appropriate.
 5. Compare with similar past cases from the database.
 6. Provide a detailed judgment prediction.
+
+═══════════════════════════════════════════════════════════════════════════════
+                    STRICT CONFIDENCE SCORING RULES
+═══════════════════════════════════════════════════════════════════════════════
+
+You MUST follow these rules when assigning Liability_Confidence, Success_Probability,
+and all Predicted_Outcomes Confidence values:
+
+A) OBSERVE THE MAXIMUM CONFIDENCE CEILING in the validation report above.
+   Your confidence numbers must NEVER exceed that ceiling.
+
+B) MISSING INFORMATION PENALTIES (cumulative):
+   - Each missing critical field (name, address, grievance, claim amount): -8-15%
+   - Each missing major field (dates, category, relief sought): -4-6%
+   - Missing grievance description entirely: confidence CANNOT exceed 30%
+   - Very brief grievance description (<50 chars): confidence CANNOT exceed 55%
+
+C) MISSING DOCUMENT PENALTIES:
+   - No documents uploaded at all: confidence CANNOT exceed 45%
+   - Missing mandatory filing docs (index, proforma, affidavit): -8% each
+   - No purchase receipt when an amount is claimed: -7%
+   - No supporting evidence (photos, communications): -10%
+
+D) CONTRADICTION PENALTIES:
+   - Date contradictions (deficiency before purchase): confidence CANNOT exceed 25%
+   - Claim >10x purchase amount without justification: -12%
+   - Category/deficiency type mismatch: -10%
+   - Limitation period exceeded (>2 years): confidence CANNOT exceed 20%
+
+E) BASELINE SCORING:
+   - A fully complete case with all documents and no contradictions: 75-90%
+   - A complete case but missing some supporting docs: 55-75%
+   - A partially complete case with key gaps: 30-55%
+   - A case with contradictions or minimal info: 15-35%
+
+F) EXPLICITLY LIST every contradiction, missing field, and missing document
+   in the Evidence_Analysis.Critical_Gaps array. Do NOT gloss over them.
+
+═══════════════════════════════════════════════════════════════════════════════
 
 Analyze the case thoroughly and respond with ONLY a valid JSON object (no markdown, no code blocks, just raw JSON).
 The JSON must follow this exact structure:
@@ -981,6 +1621,19 @@ def run_judgment_prediction(
     else:
         raise ValueError("Must provide either 'query', 'complaint_data', or 'form_dict'")
     
+    # ── Run pre-LLM validation if we have structured data ─────────────────
+    validation: Optional[ValidationReport] = None
+    validation_summary = ""
+    if complaint_data is not None:
+        print("--- Step 0: Validating Complaint Data ---")
+        validation = validate_complaint_data(complaint_data)
+        validation_summary = validation.summary
+        print(f"  Completeness: {validation.completeness_score:.0%}")
+        print(f"  Document score: {validation.document_score:.0%}")
+        print(f"  Contradictions: {len([i for i in validation.issues if i.category == 'contradiction'])}")
+        print(f"  Max confidence cap: {validation.max_confidence_cap}%")
+        print(f"  Total penalty points: {validation.total_penalty}")
+
     print("--- Step 1: Loading Consumer Protection Act 2019 ---")
     cpa_context = load_cpa_2019_context()
     
@@ -1007,11 +1660,12 @@ def run_judgment_prediction(
             documents=complaint_data.documents,
             cpa_context=cpa_context,
             similar_cases_context=similar_cases_context,
+            validation_summary=validation_summary,
         )
         source_docs_list = similar_docs
     else:
         print("\n--- Step 4a: Using standard RAG chain (no documents) ---")
-        qa_chain = get_qa_chain(vectorstore, cpa_context)
+        qa_chain = get_qa_chain(vectorstore, cpa_context, validation_summary=validation_summary)
         print("✅ LLM and retriever are ready.")
         response = qa_chain.invoke({"query": final_query})
         response_text = response["result"]
@@ -1020,6 +1674,12 @@ def run_judgment_prediction(
     # Parse the JSON response
     print("\n--- Step 5: Parsing Response ---")
     json_response = parse_llm_response(response_text)
+    
+    # ── Apply post-LLM confidence hard caps if validation ran ─────────────
+    if validation is not None:
+        print("\n--- Step 5a: Applying Confidence Adjustments ---")
+        json_response = apply_confidence_adjustments(json_response, validation)
+        print(f"  Applied max cap: {validation.max_confidence_cap}%")
     
     # Add source documents metadata to the response
     source_docs = []

@@ -60,6 +60,9 @@ class SubmitResponsesResponse(BaseModel):
     new_factors: Optional[List[str]] = None
     analysis: Optional[str] = None
     judge_notes: Optional[str] = None
+    response_analysis: Optional[List[dict]] = None
+    contradictions_found: Optional[List[dict]] = None
+    net_confidence_change: Optional[str] = None
     error: Optional[str] = None
 
 
@@ -153,7 +156,10 @@ async def submit_responses(request: SubmitResponsesRequest) -> SubmitResponsesRe
             updates_applied=result.get("updates_applied"),
             new_factors=result.get("new_factors"),
             analysis=result.get("analysis"),
-            judge_notes=result.get("judge_notes")
+            judge_notes=result.get("judge_notes"),
+            response_analysis=result.get("response_analysis"),
+            contradictions_found=result.get("contradictions_found"),
+            net_confidence_change=result.get("net_confidence_change"),
         )
         
     except HTTPException:

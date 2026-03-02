@@ -292,34 +292,66 @@ ANALYZE_RESPONSES_PROMPT = PromptTemplate(
 {qa_session}
 
 ## Your Task:
-Based on the complainant's responses, determine if any aspects of the original prediction should be updated.
+Based on the complainant's responses, you MUST determine concrete numeric adjustments to the prediction.
+This is a CRITICAL step — the Q&A is the judge's opportunity to probe weaknesses, and the responses
+should meaningfully impact the confidence scores.
 
-Consider:
-1. Does new evidence strengthen or weaken the case?
-2. Should the success probability be adjusted?
-3. Should the compensation estimate be revised?
-4. Are there any new factors that affect the case strength?
-5. Any additional arguments that should be noted?
+## STRICT ANALYSIS RULES:
+
+1. **Vague or evasive responses** → REDUCE success_probability by 5-15% per evasive answer.
+   A vague response is one that doesn't provide specifics (dates, amounts, names, document references).
+
+2. **Contradictions with original case data** → REDUCE by 10-20% per contradiction found.
+   Flag each contradiction explicitly.
+
+3. **New evidence mentioned but not documented** → REDUCE by 3-5%.
+   If the complainant mentions evidence they have but didn't upload, that's a gap.
+
+4. **Strong, specific, well-supported answers** → INCREASE by 3-8% per strong answer.
+   Only increase if the response adds genuinely new information backed by specifics.
+
+5. **Failure to explain how compensation was calculated** → REDUCE by 8-12%.
+
+6. **No prior attempt to resolve with opposite party** → REDUCE by 5-8%.
+
+7. **Every response must be evaluated** — do NOT skip any Q&A pair.
 
 ## Output Format:
 Return a JSON object with the following structure:
 {{
-    "should_update": true/false,
+    "should_update": true,
+    "response_analysis": [
+        {{
+            "question_id": 1,
+            "response_quality": "strong|adequate|vague|evasive|contradictory",
+            "confidence_adjustment": "+X% or -X%",
+            "reasoning": "Why this response affects the score"
+        }}
+    ],
+    "net_confidence_change": "+X% or -X% (net of all individual adjustments)",
     "updates": {{
-        "case_strength": "STRONG/MODERATE/WEAK" (only if changed),
-        "success_probability": "XX%" (only if changed),
-        "compensation_minimum": "amount" (only if changed),
-        "compensation_maximum": "amount" (only if changed),
-        "compensation_most_likely": "amount" (only if changed)
+        "case_strength": "STRONG/MODERATE/WEAK",
+        "success_probability": "XX%",
+        "compensation_minimum": "amount (only if changed)",
+        "compensation_maximum": "amount (only if changed)",
+        "compensation_most_likely": "amount (only if changed)"
     }},
+    "contradictions_found": [
+        {{
+            "description": "What contradicts what",
+            "severity": "critical|major|minor",
+            "penalty_applied": "X%"
+        }}
+    ],
     "new_factors": [
         "List of new factors revealed by responses that affect the case"
     ],
-    "updated_analysis": "Brief explanation of how the responses affected the analysis",
-    "judge_notes": "Any notes the judge wants to add based on the Q&A"
+    "updated_analysis": "Detailed explanation of how each response affected the analysis",
+    "judge_notes": "Judicial observations based on the Q&A session"
 }}
 
-If no updates are needed, set "should_update" to false and "updates" to an empty object.
+IMPORTANT: "should_update" must almost always be true — the Q&A always reveals something.
+Only set it to false if every single answer perfectly matched expectations with zero new info.
 
 Analyze the responses now:
 """
@@ -373,8 +405,8 @@ def process_user_responses(
         
         analysis = json.loads(content)
         
-        # Update prediction if needed
-        if analysis.get("should_update", False):
+        # Update prediction — Q&A almost always produces updates
+        if analysis.get("should_update", True):
             updates = analysis.get("updates", {})
             
             # Also update prediction_json with new factors and notes
@@ -385,7 +417,7 @@ def process_user_responses(
                 except:
                     current_json = {}
             
-            # Add new fields from analysis
+            # Store rich Q&A analysis in prediction_json
             current_json["qa_new_factors"] = analysis.get("new_factors", [])
             current_json["qa_updated_analysis"] = analysis.get("updated_analysis", "")
             current_json["judge_notes"] = analysis.get("judge_notes", "")
@@ -394,6 +426,9 @@ def process_user_responses(
                 {"question": r.question_text, "response": r.response_text}
                 for r in responses
             ]
+            current_json["qa_response_analysis"] = analysis.get("response_analysis", [])
+            current_json["qa_contradictions_found"] = analysis.get("contradictions_found", [])
+            current_json["qa_net_confidence_change"] = analysis.get("net_confidence_change", "0%")
             
             # Prepare full updates
             full_updates = {**updates, "prediction_json": json.dumps(current_json)}
@@ -407,7 +442,11 @@ def process_user_responses(
                 "updates_applied": updates,
                 "new_factors": analysis.get("new_factors", []),
                 "analysis": analysis.get("updated_analysis", ""),
-                "db_update_success": update_success
+                "judge_notes": analysis.get("judge_notes", ""),
+                "response_analysis": analysis.get("response_analysis", []),
+                "contradictions_found": analysis.get("contradictions_found", []),
+                "net_confidence_change": analysis.get("net_confidence_change", "0%"),
+                "db_update_success": update_success,
             }
         else:
             # Just mark Q&A as completed without changing prediction
