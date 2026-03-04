@@ -57,7 +57,7 @@ Users submit a detailed consumer complaint form (complainant details, opposite p
 After prediction, the AI generates judicial-style clarifying questions targeting evidence gaps, timeline issues, and damages calculations. User responses are analyzed by the LLM and the prediction is updated accordingly.
 
 ### 🏛️ Courtroom Simulation (Moot Court)
-A LangGraph-based multi-agent courtroom simulation with **Judge**, **Defense Lawyer**, and **Consumer** roles. Uses phased proceedings (opening → arguments → evidence → closing → verdict) with human-in-the-loop interaction for the consumer.
+A LangGraph-based multi-agent courtroom simulation with **Judge** and **Consumer** roles. Uses phased proceedings (opening → arguments → evidence → closing → verdict) with human-in-the-loop interaction for the consumer.
 
 ### 💬 AI Chat Assistant
 A persistent conversational legal assistant specializing in Indian consumer law. It guides users through complaint intake, explains relevant CPA 2019 sections, and can draft and send formal complaint emails via Gmail API integration (with user approval).
@@ -75,35 +75,9 @@ Users can create, manage, and track multiple consumer complaint cases through a 
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (React + Vite)                   │
-│  Landing ─ Auth ─ Cases ─ Chat ─ Voice ─ MootCourt ─ Verdict│
-└────────────────────────┬────────────────────────────────────┘
-                         │ REST API
-┌────────────────────────▼────────────────────────────────────┐
-│                  Backend (FastAPI + LangChain)               │
-│                                                              │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────────┐  │
-│  │Prediction│ │Questions │ │  Chat    │ │    Voice      │  │
-│  │  Routes  │ │  Routes  │ │  Routes  │ │    Routes     │  │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └──────┬────────┘  │
-│       │             │            │               │           │
-│  ┌────▼─────────────▼────────────▼───────────────▼────────┐ │
-│  │           Core Services Layer                          │ │
-│  │  Judgment Prediction │ Judge Q&A │ Chat │ Voice │ Email │ │
-│  └────────────┬───────────────────────────────────────────┘ │
-│               │                                              │
-│  ┌────────────▼───────────────────────────────────────────┐ │
-│  │   Google Gemini │ ChromaDB (RAG) │ Sarvam AI │ Gmail   │ │
-│  └────────────────────────────────────────────────────────┘ │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-              ┌────────────▼─────────────┐
-              │   Supabase (Auth + DB)    │
-              │   ChromaDB Vector Store   │
-              └──────────────────────────┘
-```
+
+<img width="8191" height="7209" alt="Image" src="https://github.com/user-attachments/assets/180fb938-58c9-4293-ac9d-72ae3b26dac7" />
+
 
 ---
 
