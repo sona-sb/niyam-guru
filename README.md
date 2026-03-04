@@ -76,33 +76,7 @@ Users can create, manage, and track multiple consumer complaint cases through a 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (React + Vite)                   │
-│  Landing ─ Auth ─ Cases ─ Chat ─ Voice ─ MootCourt ─ Verdict│
-└────────────────────────┬────────────────────────────────────┘
-                         │ REST API
-┌────────────────────────▼────────────────────────────────────┐
-│                  Backend (FastAPI + LangChain)               │
-│                                                              │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────────┐  │
-│  │Prediction│ │Questions │ │  Chat    │ │    Voice      │  │
-│  │  Routes  │ │  Routes  │ │  Routes  │ │    Routes     │  │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └──────┬────────┘  │
-│       │             │            │               │           │
-│  ┌────▼─────────────▼────────────▼───────────────▼────────┐ │
-│  │           Core Services Layer                          │ │
-│  │  Judgment Prediction │ Judge Q&A │ Chat │ Voice │ Email │ │
-│  └────────────┬───────────────────────────────────────────┘ │
-│               │                                              │
-│  ┌────────────▼───────────────────────────────────────────┐ │
-│  │   Google Gemini │ ChromaDB (RAG) │ Sarvam AI │ Gmail   │ │
-│  └────────────────────────────────────────────────────────┘ │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-              ┌────────────▼─────────────┐
-              │   Supabase (Auth + DB)    │
-              │   ChromaDB Vector Store   │
-              └──────────────────────────┘
+https://github.com/sona-sb/niyam-guru/blob/5cc1c70d712b7265d375037a1fe7490d0a8950cd/Niyam-Guru-Architecture.png
 ```
 
 ---
