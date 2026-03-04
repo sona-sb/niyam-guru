@@ -37,6 +37,7 @@ class SendMessageResponse(BaseModel):
     case_id: Optional[str] = None
     reply: Optional[str] = None
     email_draft: Optional[dict] = None
+    document_pack: Optional[dict] = None
     error: Optional[str] = None
 
 
@@ -73,7 +74,7 @@ async def send_message(req: SendMessageRequest):
             success=False, error=f"Case {req.case_id} not found"
         )
 
-    reply, email_draft, error = await chat_service.chat(
+    reply, email_draft, document_pack, error = await chat_service.chat(
         case_id=req.case_id,
         user_message=req.message,
         metadata=req.metadata,
@@ -83,7 +84,8 @@ async def send_message(req: SendMessageRequest):
         return SendMessageResponse(success=False, case_id=req.case_id, error=error)
 
     return SendMessageResponse(
-        success=True, case_id=req.case_id, reply=reply, email_draft=email_draft,
+        success=True, case_id=req.case_id, reply=reply,
+        email_draft=email_draft, document_pack=document_pack,
     )
 
 

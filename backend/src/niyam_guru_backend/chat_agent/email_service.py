@@ -63,13 +63,13 @@ class EmailService:
             from langchain_google_community import GmailToolkit
             from langchain_google_community.gmail.utils import (
                 build_resource_service,
-                get_gmail_credentials,
+                get_google_credentials,
             )
 
-            credentials = get_gmail_credentials(
+            credentials = get_google_credentials(
                 token_file=GMAIL_TOKEN_FILE,
                 scopes=["https://mail.google.com/"],
-                client_sercret_file=GMAIL_CREDENTIALS_FILE,
+                client_secrets_file=GMAIL_CREDENTIALS_FILE,
             )
             self.api_resource = build_resource_service(credentials=credentials)
             self.toolkit = GmailToolkit(api_resource=self.api_resource)

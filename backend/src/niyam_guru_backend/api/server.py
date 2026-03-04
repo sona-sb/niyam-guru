@@ -18,6 +18,7 @@ from niyam_guru_backend.api.prediction_routes import router as prediction_router
 from niyam_guru_backend.api.question_routes import router as question_router
 from niyam_guru_backend.api.voice_routes import voice_router
 from niyam_guru_backend.api.chat_routes import router as chat_router
+from niyam_guru_backend.api.document_routes import router as document_router
 
 
 @asynccontextmanager
@@ -93,6 +94,7 @@ app.include_router(prediction_router)
 app.include_router(question_router)
 app.include_router(voice_router)
 app.include_router(chat_router)
+app.include_router(document_router)
 
 
 # Root endpoint

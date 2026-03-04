@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { Mic, MicOff, Send, ArrowRight, Loader2, User, Bot, Mail, Check, X } from 'lucide-react';
+import { Mic, MicOff, Send, ArrowRight, Loader2, User, Bot, Mail, Check, X, FileText, Download } from 'lucide-react';
 import { apiClient } from '@/src/lib/apiClient';
 import { useAuth } from '@/src/contexts/AuthContext';
 
@@ -12,12 +12,18 @@ interface EmailDraft {
   status: string;
 }
 
+interface DocumentPack {
+  documents: Record<string, string>;       // key → base64 PDF
+  document_names: Record<string, string>;  // key → filename
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
   emailDraft?: EmailDraft;
+  documentPack?: DocumentPack;
 }
 
 // ---------------------------------------------------------------------------
@@ -101,6 +107,98 @@ const EmailPreviewCard: React.FC<{
 };
 
 // ---------------------------------------------------------------------------
+// Document Pack Card — shown inline when the agent generates filing documents
+// ---------------------------------------------------------------------------
+
+const DOC_LABELS: Record<string, { label: string; icon: string }> = {
+  index:           { label: 'Index / List of Documents',      icon: '📋' },
+  proforma:        { label: 'Complaint Proforma',             icon: '📝' },
+  affidavit:       { label: 'Affidavit / Verification',       icon: '✍️' },
+  memo_of_parties: { label: 'Memo of Parties',                icon: '👥' },
+  list_of_dates:   { label: 'List of Dates & Events',         icon: '📅' },
+};
+
+const downloadPdf = (b64: string, filename: string) => {
+  const bytes = atob(b64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  const blob = new Blob([arr], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+const DocumentPackCard: React.FC<{ pack: DocumentPack }> = ({ pack }) => {
+  const docKeys = Object.keys(pack.documents);
+
+  const handleDownloadAll = () => {
+    docKeys.forEach((key, i) => {
+      setTimeout(() => {
+        downloadPdf(pack.documents[key], pack.document_names[key] || `${key}.pdf`);
+      }, i * 300);
+    });
+  };
+
+  return (
+    <div className="mt-2 border border-gray-200 rounded-xl bg-gray-50 overflow-hidden shadow-sm">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-white border-b border-gray-100">
+        <FileText size={14} className="text-gray-500" />
+        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Filing Documents</span>
+        <span className="ml-auto text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+          {docKeys.length} Ready
+        </span>
+      </div>
+
+      {/* Document list */}
+      <div className="px-4 py-3 space-y-2">
+        {docKeys.map((key) => {
+          const meta = DOC_LABELS[key] || { label: key, icon: '📄' };
+          const filename = pack.document_names[key] || `${key}.pdf`;
+          return (
+            <div
+              key={key}
+              className="flex items-center justify-between gap-2 px-3 py-2 bg-white border border-gray-100 rounded-lg"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-base shrink-0">{meta.icon}</span>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-gray-800 truncate">{meta.label}</p>
+                  <p className="text-[10px] text-gray-400 truncate">{filename}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => downloadPdf(pack.documents[key], filename)}
+                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-black bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                <Download size={10} />
+                Download
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Download All */}
+      <div className="px-4 py-2.5 border-t border-gray-100 bg-white">
+        <button
+          onClick={handleDownloadAll}
+          className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+        >
+          <Download size={12} />
+          Download All Documents
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
 
 export const ChatInterface: React.FC = () => {
   const navigate = useNavigate();
@@ -139,13 +237,16 @@ export const ChatInterface: React.FC = () => {
           if (res.ok) {
             const data = await res.json();
             if (data.messages && data.messages.length > 0) {
-              const loadedMsgs: Message[] = data.messages.map((m: any) => ({
-                id: m.id,
-                role: m.role as 'user' | 'assistant',
-                content: m.content,
-                timestamp: new Date(m.created_at),
-                emailDraft: m.metadata?.email_draft || undefined,
-              }));
+              const loadedMsgs: Message[] = data.messages
+                .filter((m: any) => m.content && m.content.trim().length > 0)
+                .map((m: any) => ({
+                  id: m.id,
+                  role: m.role as 'user' | 'assistant',
+                  content: m.content,
+                  timestamp: new Date(m.created_at),
+                  emailDraft: m.metadata?.email_draft || undefined,
+                  documentPack: m.metadata?.document_pack || undefined,
+                }));
               setMessages(loadedMsgs);
 
               // If the initial voice transcript is also the first user message,
@@ -230,6 +331,7 @@ export const ChatInterface: React.FC = () => {
         case_id?: string;
         reply?: string;
         email_draft?: EmailDraft;
+        document_pack?: DocumentPack;
         error?: string;
       }>('/api/chat/send', {
         user_id: user?.id || '',
@@ -238,13 +340,14 @@ export const ChatInterface: React.FC = () => {
       });
 
       if (response.success) {
-        if (response.reply) {
+        if (response.reply && response.reply.trim()) {
           const assistantMessage: Message = {
             id: Date.now().toString(),
             role: 'assistant',
             content: response.reply,
             timestamp: new Date(),
             emailDraft: response.email_draft || undefined,
+            documentPack: response.document_pack || undefined,
           };
           setMessages((prev) => [...prev, assistantMessage]);
         }
@@ -490,6 +593,11 @@ export const ChatInterface: React.FC = () => {
                       );
                     }}
                   />
+                )}
+
+                {/* Filing Documents Pack Card */}
+                {message.documentPack && (
+                  <DocumentPackCard pack={message.documentPack} />
                 )}
 
                 <p className="text-xs text-gray-400 mt-1 px-1">

@@ -286,6 +286,11 @@ export const ConsumerComplaintTemplate: React.FC = () => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(evidenceCategories[0]);
+  const [isGeneratingDocs, setIsGeneratingDocs] = useState(false);
+  const [generatedDocuments, setGeneratedDocuments] = useState<
+    Record<string, { b64: string; filename: string }>
+  >({});
+  const [docGenError, setDocGenError] = useState<string | null>(null);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -399,6 +404,56 @@ export const ConsumerComplaintTemplate: React.FC = () => {
     if (type.includes('word') || type.includes('document')) return '📝';
     return '📎';
   };
+
+  // ── Auto-document generation ──────────────────────────────────────────────
+  const handleGenerateDocuments = async () => {
+    setIsGeneratingDocs(true);
+    setDocGenError(null);
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${API_BASE}/api/documents/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ form_data: formData }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Server error ${res.status}`);
+      }
+      const data: {
+        documents: Record<string, string>;
+        document_names: Record<string, string>;
+      } = await res.json();
+
+      const result: Record<string, { b64: string; filename: string }> = {};
+      for (const [key, b64] of Object.entries(data.documents)) {
+        result[key] = { b64, filename: data.document_names[key] ?? `${key}.pdf` };
+      }
+      setGeneratedDocuments(result);
+    } catch (err: unknown) {
+      setDocGenError(err instanceof Error ? err.message : 'Failed to generate documents');
+    } finally {
+      setIsGeneratingDocs(false);
+    }
+  };
+
+  const downloadGeneratedDoc = (key: string) => {
+    const doc = generatedDocuments[key];
+    if (!doc) return;
+    const bytes = atob(doc.b64);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const blob = new Blob([arr], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = doc.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  // ─────────────────────────────────────────────────────────────────────────
 
   const inputClass =
     'w-full px-4 py-2.5 bg-[#FAF3E8] border-2 border-black/20 rounded-xl font-sans text-[15px] text-black/60 placeholder-black/40 focus:outline-none focus:border-black/50 transition-all duration-300';
@@ -910,9 +965,92 @@ export const ConsumerComplaintTemplate: React.FC = () => {
           {currentSection === 4 && (
             <div className="bg-[#FAF3E8] rounded-2xl p-8 border border-[#EBEBEB] shadow-sm">
               <h3 className="font-semibold text-2xl text-gray-900 mb-2">Document Upload</h3>
-              <p className="text-sm text-gray-500 mb-8">
+              <p className="text-sm text-gray-500 mb-6">
                 Upload the following mandatory documents to proceed with your complaint filing.
               </p>
+
+              {/* ── Auto-Generate Documents ─────────────────────────────────── */}
+              <div className="mb-8 p-5 rounded-xl border border-black/10 bg-white/60">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <h4 className="font-semibold text-sm text-black mb-1">
+                      Auto-Generate Filing Documents
+                    </h4>
+                    <p className="text-xs text-gray-500 max-w-md">
+                      Automatically fill the Index, Proforma, Affidavit, Memo of Parties, and
+                      List of Dates &amp; Events using the information you entered in this form.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleGenerateDocuments}
+                    disabled={isGeneratingDocs}
+                    className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm font-medium rounded-lg hover:bg-black/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isGeneratingDocs ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        Generating…
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Generate Documents
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {docGenError && (
+                  <p className="mt-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                    ⚠️ {docGenError}
+                  </p>
+                )}
+
+                {Object.keys(generatedDocuments).length > 0 && (
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {([
+                      { key: 'index',           label: 'Index of Documents',      icon: '📋' },
+                      { key: 'proforma',        label: 'Complaint Proforma',       icon: '📝' },
+                      { key: 'affidavit',       label: 'Affidavit / Verification', icon: '✍️' },
+                      { key: 'memo_of_parties', label: 'Memo of Parties',          icon: '👥' },
+                      { key: 'list_of_dates',   label: 'List of Dates & Events',   icon: '📅' },
+                    ] as const).map(({ key, label, icon }) => {
+                      const doc = generatedDocuments[key];
+                      if (!doc) return null;
+                      return (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between gap-2 px-3 py-2.5 bg-green-50 border border-green-200 rounded-lg"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base shrink-0">{icon}</span>
+                            <span className="text-xs font-medium text-green-800 truncate">{label}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => downloadGeneratedDoc(key)}
+                            className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 bg-green-700 hover:bg-green-800 text-white text-xs font-medium rounded transition-colors"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              {/* ─────────────────────────────────────────────────────────────── */}
 
               {/* Mandatory Documents Section */}
               <div className="space-y-6 mb-10">
