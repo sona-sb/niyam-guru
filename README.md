@@ -57,7 +57,7 @@ Users submit a detailed consumer complaint form (complainant details, opposite p
 After prediction, the AI generates judicial-style clarifying questions targeting evidence gaps, timeline issues, and damages calculations. User responses are analyzed by the LLM and the prediction is updated accordingly.
 
 ### 🏛️ Courtroom Simulation (Moot Court)
-A LangGraph-based multi-agent courtroom simulation with **Judge**, **Defense Lawyer**, and **Consumer** roles. Uses phased proceedings (opening → arguments → evidence → closing → verdict) with human-in-the-loop interaction for the consumer.
+A LangGraph-based multi-agent courtroom simulation with **Judge** and **Consumer** roles. Uses phased proceedings (opening → arguments → evidence → closing → verdict) with human-in-the-loop interaction for the consumer.
 
 ### 💬 AI Chat Assistant
 A persistent conversational legal assistant specializing in Indian consumer law. It guides users through complaint intake, explains relevant CPA 2019 sections, and can draft and send formal complaint emails via Gmail API integration (with user approval).
