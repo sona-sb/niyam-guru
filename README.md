@@ -75,9 +75,9 @@ Users can create, manage, and track multiple consumer complaint cases through a 
 
 ## Architecture
 
-```
+
 https://github.com/sona-sb/niyam-guru/blob/5cc1c70d712b7265d375037a1fe7490d0a8950cd/Niyam-Guru-Architecture.png
-```
+
 
 ---
 
